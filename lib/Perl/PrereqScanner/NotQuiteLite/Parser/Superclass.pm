@@ -11,28 +11,36 @@ sub register { return {
 }}
 
 sub parse_superclass_args {
-  my ($class, $c, $used_module, $tokens) = @_;
-  if (my $version = $tokens->read('version')) {
-    $c->add($used_module => $version);
+  my ($class, $c, $used_module, $raw_tokens) = @_;
+
+  my $tokens = convert_string_tokens($raw_tokens);
+  if (is_version($tokens->[0])) {
+    $c->add($used_module => shift @$tokens);
   }
-  while($tokens->have_token) {
-    my @maybe_modules = $tokens->read('strings');
-    last if grep {$_ eq '-norequire'} @maybe_modules;
-    last unless @maybe_modules;
-    if (my $version = $tokens->read('version')) {
-      my $maybe_module = pop @maybe_modules;
-      $c->add($maybe_module => $version);
+
+  my ($module, $version, $prev);
+  for my $token (@$tokens) {
+    last if $token eq '-norequire';
+    if (ref $token) {
+      last if $token->[0] eq '-norequire';
+      $prev = $token->[0];
+      next;
     }
-    my $version;
-    while(my $maybe_module = pop @maybe_modules) {
-      if (!is_module_name($maybe_module)) {
-        $version = is_version($maybe_module) ? $maybe_module : 0;
-        next;
+    $prev = $token;
+
+    if (is_module_name($token)) {
+      if ($module) {
+        $c->add($module => $version || 0);
       }
-      $c->add($maybe_module => $version || 0);
-      $version = 0;
+      $module = $token;
+      next;
     }
-    $tokens->next;
+    if (is_version($token)) {
+      $c->add($module => $token);
+    }
+  }
+  if ($module) {
+    $c->add($module => 0);
   }
 }
 

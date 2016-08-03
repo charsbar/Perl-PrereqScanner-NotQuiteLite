@@ -11,12 +11,12 @@ sub register { return {
 }}
 
 sub parse_poe_args {
-  my ($class, $c, $used_module, $tokens) = @_;
-  $c->add($used_module => 0);
-  my @names = $tokens->read('strings');
-  for my $name (@names) {
-    $c->add("POE\::$name" => 0);
+  my ($class, $c, $used_module, $raw_tokens) = @_;
+  my $tokens = convert_string_tokens($raw_tokens);
+  if (is_version($tokens->[0])) {
+    $c->add($used_module => shift @$tokens);
   }
+  $c->add($_ eq "POE" ? $_ : "POE::".$_ => 0) for grep {!ref $_} @$tokens;
 }
 
 1;

@@ -81,33 +81,8 @@ sub has_added {
 
 sub _object {
   my $self = shift;
-  my $key = $self->is_in_eval ? 'suggests' : 'requires';
+  my $key = ($self->{eval} || $self->{cond}) ? 'suggests' : 'requires';
   $self->{$key} or return;
-}
-
-sub skips_eval {
-  my $self = shift;
-  return $self->{suggests} ? 0 : 1;
-}
-
-sub is_in_eval {
-  my $self = shift;
-
-  exists $self->{eval} ? 1 : 0;
-}
-
-sub enter_eval {
-  my ($self, $depth) = @_;
-  push @{$self->{eval} ||= []}, $depth;
-}
-
-sub exit_eval_if_match {
-  my ($self, $depth) = @_;
-  return unless exists $self->{eval};
-  if ($self->{eval}[-1] == $depth) {
-    pop @{$self->{eval}};
-    delete $self->{eval} if !@{$self->{eval}};
-  }
 }
 
 sub has_callbacks {
@@ -154,20 +129,6 @@ or a suggestion, depending on the eval state. You can add a module
 with different versions as many times as you wish. The actual
 minimum version for the module is calculated inside
 (by L<CPAN::Meta::Requirements>).
-
-=head2 enter_eval, exit_eval_if_match, is_in_eval, skips_eval
-
-  $c->enter_eval($tokens->block_depth);
-  if (!$c->skips_eval or !$c->is_in_eval) {
-    ... # do something
-  }
-  $c->exit_eval_if_match($tokens->block_depth + 1);
-
-If you find a token for C<eval> or its equivalents,
-call C<enter_eval> to tell the context object from which block the
-eval has started. (You can pass a negative value when a string
-C<eval> is found). You can use C<exit_eval_if_match> to
-end C<eval> when you get out of the block.
 
 =head2 register_keyword, remove_keyword, register_method
 

@@ -25,4 +25,8 @@ test('cond may have commas', <<'END', {if => 0, 'Test::More' => 0});
 use if [1, 2 => 3] => "Test::More";
 END
 
+test('cond may have commas', <<'END', {if => 0, 'Test::More' => 0});
+use if [1, 2 => qw/foo/] => "Test::More";
+END
+
 done_testing;

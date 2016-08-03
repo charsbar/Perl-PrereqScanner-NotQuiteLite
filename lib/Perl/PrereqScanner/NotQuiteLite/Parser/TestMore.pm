@@ -10,7 +10,7 @@ sub register { return {
 }}
 
 sub parse_test_more_args {
-  my ($class, $c, $used_module, $tokens) = @_;
+  my ($class, $c, $used_module, $raw_tokens) = @_;
 
   $c->register_keyword(
     'done_testing',
@@ -19,7 +19,7 @@ sub parse_test_more_args {
 }
 
 sub parse_done_testing_args {
-  my ($class, $c, $used_module, $tokens) = @_;
+  my ($class, $c, $used_module, $raw_tokens) = @_;
 
   $c->add($used_module => '0.88');
 }

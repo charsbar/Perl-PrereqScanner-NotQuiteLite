@@ -11,19 +11,14 @@ sub register { return {
 }}
 
 sub parse_version_args {
-  my ($class, $c, $module, $args_tokens, $tokens) = @_;
-  return unless $args_tokens;
-  my $end_of_statement;
-  if ($tokens->current_is('close_brace')) { # end of eval block
-    $end_of_statement = 1;
-  } else {
-    $tokens->next;
-    $end_of_statement = 1 if !$tokens->have_next or $tokens->have_token && $tokens->current_is('end_of_statement');
-  }
-  if ($end_of_statement) {
-    if (my $version = $args_tokens->read('version_string')) {
-      $c->add($module => $version) if $c->has_added($module);
-    }
+  my ($class, $c, $raw_tokens) = @_;
+
+  my ($module_token, undef, undef, $args_tokens) = @$raw_tokens;
+  my $module = $module_token->[0];
+  my @tokens_in_parens = @{$args_tokens->[0] || []};
+  my ($module_version) = $tokens_in_parens[0][0][0];
+  if ($module_version =~ /^v?[0-9._]+$/) {
+    $c->add($module => $module_version) if $c->has_added($module);
   }
 }
 

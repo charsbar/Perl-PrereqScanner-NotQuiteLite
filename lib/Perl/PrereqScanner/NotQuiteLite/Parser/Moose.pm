@@ -20,7 +20,7 @@ sub register { return {
 }}
 
 sub parse_moose_args {
-  my ($class, $c, $used_module, $tokens) = @_;
+  my ($class, $c, $used_module, $raw_tokens) = @_;
 
   $c->register_keyword(
     'extends',
@@ -33,7 +33,7 @@ sub parse_moose_args {
 }
 
 sub parse_no_moose_args {
-  my ($class, $c, $used_module, $tokens) = @_;
+  my ($class, $c, $used_module, $raw_tokens) = @_;
 
   $c->remove_keyword('extends');
   $c->remove_keyword('with') unless $used_module eq 'Mo';
@@ -43,33 +43,34 @@ sub parse_extends_args { shift->_parse_loader_args(@_) }
 sub parse_with_args { shift->_parse_loader_args(@_) }
 
 sub _parse_loader_args {
-  my ($class, $c, $used_module, $tokens) = @_;
+  my ($class, $c, $used_module, $raw_tokens) = @_;
 
-  while ($tokens->have_token) {
-    my @maybe_modules = $tokens->read('strings');
-    if (my $tokens_in_between = $tokens->read_between('braces')) {
-      while($tokens_in_between->have_token) {
-        if ($tokens_in_between->block_depth) {
-          $tokens_in_between->next;
-          next;
-        }
-        if ($tokens_in_between->current_is(qw/keyword string/) and
-          $tokens_in_between->read_data eq '-version'
-        ) {
-          $tokens_in_between->next if $tokens_in_between->current_is('comma');
-          my $version = $tokens_in_between->read_data;
-          if (is_version($version)) {
-            my $maybe_module = pop @maybe_modules;
-            $c->add($maybe_module => $version);
-            last;
+  my $tokens = convert_string_tokens($raw_tokens);
+  shift @$tokens; # discard extends, with;
+
+  my $prev;
+  for my $token (@$tokens) {
+    if (!ref $token) {
+      $c->add($token => 0);
+      $prev = $token;
+      next;
+    }
+    my $desc = $token->[1];
+    if ($desc eq '{}') {
+      my @hash_tokens = @{$token->[0] || []};
+      for(my $i = 0, my $len = @hash_tokens; $i < $len; $i++) {
+        if ($hash_tokens[$i][0] eq '-version' and $i < $len - 2) {
+          my $maybe_version_token = $hash_tokens[$i + 2];
+          my $maybe_version = $maybe_version_token->[0];
+          if (ref $maybe_version) {
+            $maybe_version = $maybe_version->[0];
+          }
+          if ($prev and is_version($maybe_version)) {
+            $c->add($prev => $maybe_version);
           }
         }
-        $tokens_in_between->next;
       }
     }
-    $c->add($_ => 0) for @maybe_modules;
-    last unless $tokens->current_is(qw/whitespace comma/);
-    $tokens->next;
   }
 }
 

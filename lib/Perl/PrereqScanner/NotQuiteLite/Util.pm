@@ -4,10 +4,37 @@ use strict;
 use warnings;
 use Exporter 5.57 qw/import/;
 
-our @EXPORT = qw/
+our @FLAGS;
+use constant {do {my $i = 0; map {$_ => 1 << $i++} (@FLAGS = qw/
+  F_KEEP_TOKENS
+  F_EVAL
+  F_STRING_EVAL
+  F_EXPECTS_BRACKET
+  F_CONDITIONAL
+  F_SIDEFF
+  F_SCOPE_END
+  F_SENTENCE_END
+  F_EXPR_END
+  F_EXPR
+/)}};
+use constant {
+  MASK_KEEP_TOKENS => ~(F_KEEP_TOKENS),
+  MASK_EXPR_END => ~(F_EXPR_END|F_EXPR),
+  MASK_SENTENCE_END => ~(F_KEEP_TOKENS|F_SENTENCE_END|F_EXPR|F_EXPR_END|F_SIDEFF),
+  MASK_EVAL => ~(F_EVAL),
+  F_RESCAN => (F_KEEP_TOKENS|F_EVAL|F_STRING_EVAL|F_CONDITIONAL),
+};
+
+our @EXPORT = (@FLAGS, qw/
   is_module_name
   is_version
-/;
+  convert_string_tokens
+  MASK_KEEP_TOKENS
+  MASK_EXPR_END
+  MASK_SENTENCE_END
+  MASK_EVAL
+  F_RESCAN
+/);
 
 sub is_module_name {
   my $name = shift or return;
@@ -28,6 +55,32 @@ sub is_version {
     ) (?:_[0-9]+)?
   \z/x;
   return;
+}
+
+sub convert_string_tokens {
+  my $org_tokens = shift;
+  my @tokens;
+  my @copied_tokens = @$org_tokens;
+  while(my $copied_token = shift @copied_tokens) {
+    my ($token, $desc) = @$copied_token;
+    if ($desc eq '()') {
+      unshift @copied_tokens, @$token;
+      next;
+    }
+
+    if (!$desc) {
+      push @tokens, $copied_token;
+    } elsif ($desc eq 'VERSION_STRING' or $desc eq 'NUMBER') {
+      push @tokens, $token;
+    } elsif ($desc eq 'STRING') {
+      push @tokens, $token->[0];
+    } elsif ($desc eq 'QUOTED_WORD_LIST') {
+      push @tokens, split / /, $token->[0];
+    } else {
+      push @tokens, $copied_token;
+    }
+  }
+  \@tokens;
 }
 
 1;

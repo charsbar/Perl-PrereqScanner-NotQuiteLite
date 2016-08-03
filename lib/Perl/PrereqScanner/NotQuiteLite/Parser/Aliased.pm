@@ -11,12 +11,17 @@ sub register { return {
 }}
 
 sub parse_aliased_args {
-  my ($class, $c, $used_module, $tokens) = @_;
-  if (my $version = $tokens->read('version')) {
-    $c->add($used_module => $version);
+  my ($class, $c, $used_module, $raw_tokens) = @_;
+
+  my $tokens = convert_string_tokens($raw_tokens);
+
+  if (is_version($tokens->[0])) {
+    $c->add($used_module => shift @$tokens);
   }
-  my $module = $tokens->read('module_name') or return;
-  $c->add($module => 0);
+  if (is_module_name($tokens->[0])) {
+    my $module = shift @$tokens;
+    $c->add($module => 0);
+  }
 
   # TODO: support alias keyword?
 }

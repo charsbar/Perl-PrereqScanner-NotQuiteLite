@@ -11,7 +11,7 @@ sub register { return {
 }}
 
 sub parse_plack_builder_args {
-  my ($class, $c, $used_module, $tokens) = @_;
+  my ($class, $c, $used_module, $raw_tokens) = @_;
 
   # TODO: support add_middleware(_if) methods?
 
@@ -26,9 +26,12 @@ sub parse_plack_builder_args {
 }
 
 sub parse_enable_args {
-  my ($class, $c, $used_module, $tokens) = @_;
+  my ($class, $c, $used_module, $raw_tokens) = @_;
 
-  my $module = $tokens->read('module_name') or return;
+  my $tokens = convert_string_tokens($raw_tokens);
+  shift @$tokens; # discard 'enable' itself
+
+  my $module = shift @$tokens or return;
   if ($module =~ s/^\+//) {
     $c->add($module => 0);
   } else {
@@ -37,17 +40,16 @@ sub parse_enable_args {
 }
 
 sub parse_enable_if_args {
-  my ($class, $c, $used_module, $tokens) = @_;
+  my ($class, $c, $used_module, $raw_tokens) = @_;
 
-  while($tokens->have_token) {
-    $tokens->skip_tokens_in_brackets; # to ignore commas in brackets
-    last if $tokens->current_is(qw/comma close_brace/);
-    $tokens->next;
+  while(my $token = shift @$raw_tokens) {
+    last if $token->[1] eq 'COMMA' or ref $token->[0];
   }
-  $tokens->next if $tokens->current_is(qw/close_brace/);
-  $tokens->next if $tokens->current_is(qw/comma/);
+  shift @$raw_tokens if $raw_tokens->[0][1] eq 'COMMA';
 
-  my $module = $tokens->read('module_name') or return;
+  my $tokens = convert_string_tokens($raw_tokens);
+
+  my $module = shift @$tokens or return;
   if ($module =~ s/^\+//) {
     $c->add($module => 0);
   } else {

@@ -23,7 +23,7 @@ test('use base', <<'END', used(qw/base Class::DBI4 Foo::Bar5/));
 use base qw(Class::DBI4 Foo::Bar5);
 END
 
-test('use in if block', <<'END', used(qw/Foo::Bar6/));
+test('use in if block', <<'END', {}, used(qw/Foo::Bar6/));
 if ($foo) { use Foo::Bar6; }
 END
 
@@ -217,6 +217,7 @@ END
 # dup
 test('require in string', <<'END', used(qw/Foo/));
 use Foo;say "Failed to load the release-testing modules we require: Bar;"
+END
 
 test('use Data::Section -setup', <<'END', used(qw/Data::Section/));
 use Data::Section -setup;

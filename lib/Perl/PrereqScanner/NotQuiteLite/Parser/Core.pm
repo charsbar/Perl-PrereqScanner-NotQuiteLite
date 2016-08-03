@@ -13,35 +13,56 @@ sub register { return {
 }}
 
 sub parse_if_args {
-  my ($class, $c, $used_module, $tokens) = @_;
-  while($tokens->have_token) {
-    $tokens->skip_tokens_in_brackets; # to ignore commas in brackets
-    last if $tokens->current_is('comma');
-    $tokens->next;
-  }
-  $tokens->next if $tokens->current_is('comma');
+  my ($class, $c, $used_module, $raw_tokens) = @_;
 
-  my $module = $tokens->read('module_name') or return;
-  $c->add($module => 0);
+  while(my $token = shift @$raw_tokens) {
+    last if $token->[1] eq 'COMMA';
+  }
+
+  my $tokens = convert_string_tokens($raw_tokens);
+  my $module = shift @$tokens;
+  if (ref $module and $module->[1] eq 'WORD') {
+    $module = $module->[0];
+  }
+  if (is_module_name($module)) {
+    if (is_version($tokens->[0])) {
+      my $version = shift @$tokens;
+      $c->add($module => $version);
+    } else {
+      $c->add($module => 0);
+    }
+  } else {
+    push @{$c->{errors}}, "use if module not found";
+  }
 }
 
 sub parse_base_args {
-  my ($class, $c, $used_module, $tokens) = @_;
-  if (my $version = $tokens->read('version')) {
-    $c->add($used_module => $version);
+  my ($class, $c, $used_module, $raw_tokens) = @_;
+
+  my $tokens = convert_string_tokens($raw_tokens);
+  if (is_version($tokens->[0])) {
+    $c->add($used_module => shift @$tokens);
   }
-  $c->add($_ => 0) for $tokens->read('strings');
+  $c->add($_ => 0) for grep {!ref $_} @$tokens;
 }
 
 sub parse_parent_args {
-  my ($class, $c, $used_module, $tokens) = @_;
-  if (my $version = $tokens->read('version')) {
-    $c->add($used_module => $version);
+  my ($class, $c, $used_module, $raw_tokens) = @_;
+
+  my $tokens = convert_string_tokens($raw_tokens);
+  if (is_version($tokens->[0])) {
+    $c->add($used_module => shift @$tokens);
   }
-  my @maybe_modules = $tokens->read('strings');
-  for my $maybe_module (@maybe_modules) {
-    last if $maybe_module eq '-norequire';
-    $c->add($maybe_module => 0);
+  my $prev;
+  for my $token (@$tokens) {
+    last if $token eq '-norequire';
+    if (ref $token) {
+      last if $token->[0] eq '-norequire';
+      $prev = $token->[0];
+      next;
+    }
+    $prev = $token;
+    $c->add($token => 0) if is_module_name($token);
   }
 }
 

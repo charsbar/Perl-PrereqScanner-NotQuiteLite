@@ -138,6 +138,8 @@ sub _exclude_core_prereqs {
       }
     }
   }
+  my $req = $self->{prereqs}->requirements_for('runtime', 'requires');
+  $req->add_minimum(perl => $perl_version);
 }
 
 sub _scan_dir {
@@ -150,7 +152,8 @@ sub _scan_dir {
       my $relpath = File::Spec->abs2rel($file, $self->{base_dir});
 
       return unless $relpath =~ /\.(?:pl|PL|pm|cgi|psgi|t)$/ or
-                    dirname($relpath) =~ m!\b(bin|scripts?)$!;
+                    dirname($relpath) =~ m!\b(?:bin|scripts?)$! or
+                    ($self->{develop} and $relpath =~ /^(?:author)\b/);
       $self->_scan_file($relpath);
     },
   }, $dir);

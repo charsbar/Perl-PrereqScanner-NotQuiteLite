@@ -10,9 +10,16 @@ use File::Temp qw/tempdir/;
 use File::Basename qw/dirname/;
 use File::Path qw/mkpath rmtree/;
 
-our @EXPORT = qw/test used test_app test_file/;
+our @EXPORT = qw/test todo_test used test_app test_file/;
 our $EVAL;
 our $PARSERS;
+
+sub todo_test {
+  SKIP: {
+    local $TODO = "FIXME";
+    test(@_);
+  }
+}
 
 sub test {
   my ($description, $string, $expected_requires, $expected_suggests) = @_;
