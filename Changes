@@ -1,4 +1,12 @@
 Revision history for Perl-PrereqScanner-NotQuiteLite
 
+0.49_02 2016/08/04
+  - explicitly use BEGIN for older versions of perl
+  - reset pos after utf8::decode for perl 5.14/5.16
+
+0.49_01 2016/08/03
+  - refactored, using regexp instead of Compiler::Lexer.
+    BACKWARD INCOMPATIBLE FOR CUSTOM PARSER USERS
+
 0.01 2015/05/30
   - initial release

@@ -6,7 +6,7 @@ use Carp;
 use Perl::PrereqScanner::NotQuiteLite::Context;
 use Perl::PrereqScanner::NotQuiteLite::Util;
 
-our $VERSION = '0.49_01';
+our $VERSION = '0.49_02';
 
 our @BUNDLED_PARSERS = qw/
   Aliased Core Moose Plack POE Superclass
