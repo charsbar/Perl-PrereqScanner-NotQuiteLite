@@ -1829,7 +1829,9 @@ _debug("USE TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
     $c->add($name => 0);
     $c->{utf8} = 1;
     _debug("UTF8 IS ON") if !!DEBUG;
+    my $pos = pos($$rstr); # perl 5.14/5.16 seem to reset pos by the following utf8::decode
     utf8::decode($$rstr);
+    pos($$rstr) = $pos;
   }
 
   if (is_module_name($name)) {
