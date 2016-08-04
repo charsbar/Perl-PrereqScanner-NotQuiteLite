@@ -9,4 +9,4 @@ perl:
   - 5.20
   - 5.22
 before_install:
-  - cpanm -n --installdeps .
+  - cpanm -n ExtUtils::MakeMaker::CPANfile
