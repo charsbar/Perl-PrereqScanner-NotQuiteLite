@@ -4,8 +4,9 @@ use strict;
 use warnings;
 use Exporter 5.57 qw/import/;
 
-our @FLAGS;
-use constant {do {my $i = 0; map {$_ => 1 << $i++} (@FLAGS = qw/
+our %FLAGS; BEGIN {
+  my $i = 0;
+  %FLAGS = map {$_ => 1 << $i++} qw/
   F_KEEP_TOKENS
   F_EVAL
   F_STRING_EVAL
@@ -16,7 +17,10 @@ use constant {do {my $i = 0; map {$_ => 1 << $i++} (@FLAGS = qw/
   F_SENTENCE_END
   F_EXPR_END
   F_EXPR
-/)}};
+  /;
+}
+
+use constant \%FLAGS;
 use constant {
   MASK_KEEP_TOKENS => ~(F_KEEP_TOKENS),
   MASK_EXPR_END => ~(F_EXPR_END|F_EXPR),
@@ -25,7 +29,7 @@ use constant {
   F_RESCAN => (F_KEEP_TOKENS|F_EVAL|F_STRING_EVAL|F_CONDITIONAL),
 };
 
-our @EXPORT = (@FLAGS, qw/
+our @EXPORT = ((keys %FLAGS), qw/
   is_module_name
   is_version
   convert_string_tokens
