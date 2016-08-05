@@ -1,5 +1,10 @@
 Revision history for Perl-PrereqScanner-NotQuiteLite
 
+0.49_03 2016/08/05
+  - fixed another utf8 issue where unicode characters appear
+    before use utf8
+  - fixed various issues regarding "recommends"/"suggests"
+
 0.49_02 2016/08/04
   - explicitly use BEGIN for older versions of perl
   - reset pos after utf8::decode for perl 5.14/5.16
