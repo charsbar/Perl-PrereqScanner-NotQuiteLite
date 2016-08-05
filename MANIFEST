@@ -54,6 +54,7 @@ t/scan/qq.t
 t/scan/re.t
 t/scan/sub.t
 t/scan/todo.t
+t/scan/utf8.t
 t/scan/Util.pm
 t/scan/variable.t
 t/universal_version/or_die.t
