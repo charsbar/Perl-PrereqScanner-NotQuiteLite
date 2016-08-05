@@ -238,9 +238,12 @@ sub scan_string {
 
   $string = '' unless defined $string;
 
+  my $c = Perl::PrereqScanner::NotQuiteLite::Context->new(%$self);
+
   # UTF8 BOM
   if ($string =~ s/\A(\xef\xbb\xbf)//s) {
     utf8::decode($string);
+    $c->{decoded} = 1;
   }
   # Other BOMs (TODO: also decode?)
   $string =~ s/\A(\x00\x00\xfe\xff|\xff\xfe\x00\x00|\xfe\xff|\xff\xfe)//s;
@@ -256,8 +259,6 @@ sub scan_string {
     $string =~ s/(?:\015\012|\015|\012)/\n/gs;
   }
 
-  my $c = Perl::PrereqScanner::NotQuiteLite::Context->new(%$self);
-
   # FIXME
   $c->{stack} = [];
   $c->{errors} = [];
@@ -270,9 +271,16 @@ sub scan_string {
 
   pos($string) = 0;
 
-  local $@;
-  eval { $self->_scan($c, \$string, 0) };
-  push @{$c->{errors}}, $@ if $@;
+  {
+    local $@;
+    eval { $self->_scan($c, \$string, 0) };
+    push @{$c->{errors}}, $@ if $@;
+    if ($c->{redo}) {
+      delete $c->{redo};
+      delete $c->{ended};
+      redo;
+    }
+  }
   $c;
 }
 
@@ -1828,10 +1836,13 @@ _debug("USE TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
   if ($name eq 'utf8') {
     $c->add($name => 0);
     $c->{utf8} = 1;
-    _debug("UTF8 IS ON") if !!DEBUG;
-    my $pos = pos($$rstr); # perl 5.14/5.16 seem to reset pos by the following utf8::decode
-    utf8::decode($$rstr);
-    pos($$rstr) = $pos;
+    if (!$c->{decoded}) {
+      $c->{decoded} = 1;
+      _debug("UTF8 IS ON") if !!DEBUG;
+      utf8::decode($$rstr);
+      pos($$rstr) = 0;
+      $c->{ended} = $c->{redo} = 1;
+    }
   }
 
   if (is_module_name($name)) {
