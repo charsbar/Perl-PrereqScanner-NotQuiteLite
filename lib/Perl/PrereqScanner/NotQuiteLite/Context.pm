@@ -13,6 +13,7 @@ sub new {
   );
 
   if ($args{suggests}) {
+    $context{recommends} = CPAN::Meta::Requirements->new;
     $context{suggests} = CPAN::Meta::Requirements->new;
   }
   for my $type (qw/use no method keyword/) {
@@ -43,23 +44,25 @@ sub register_method {
 }
 
 sub requires { shift->{requires} }
+sub recommends { shift->_optional('recommends') }
+sub suggests { shift->_optional('suggests') }
 
-sub suggests {
-  my $self = shift;
-  my $suggests = $self->{suggests} or return;
+sub _optional {
+  my ($self, $key) = @_;
+  my $optional = $self->{$key} or return;
 
-  # no need to suggest what are listed as requires
+  # no need to recommend/suggest what are listed as requires
   if (my $requires = $self->{requires}) {
-    my $hash = $suggests->as_string_hash;
+    my $hash = $optional->as_string_hash;
     for my $module (keys %$hash) {
       if (defined $requires->requirements_for_module($module) and
           $requires->accepts_module($module, $hash->{$module})
       ) {
-        $suggests->clear_requirement($module);
+        $optional->clear_requirement($module);
       }
     }
   }
-  $suggests;
+  $optional;
 }
 
 sub add {
@@ -67,6 +70,15 @@ sub add {
   return unless is_module_name($module);
 
   my $CMR = $self->_object or return;
+  $version = 0 unless defined $version;
+  $CMR->add_minimum($module, "$version");
+}
+
+sub add_recommendation {
+  my ($self, $module, $version) = @_;
+  return unless is_module_name($module);
+
+  my $CMR = $self->_object('recommends') or return;
   $version = 0 unless defined $version;
   $CMR->add_minimum($module, "$version");
 }
@@ -79,9 +91,17 @@ sub has_added {
   defined $CMR->requirements_for_module($module) ? 1 : 0;
 }
 
+sub has_added_recommendation {
+  my ($self, $module) = @_;
+  return unless is_module_name($module);
+
+  my $CMR = $self->_object('recommends') or return;
+  defined $CMR->requirements_for_module($module) ? 1 : 0;
+}
+
 sub _object {
-  my $self = shift;
-  my $key = ($self->{eval} || $self->{cond}) ? 'suggests' : 'requires';
+  my ($self, $allow_recommends) = @_;
+  my $key = $self->{eval} ? 'suggests' : ($allow_recommends && $self->{cond}) ? 'recommends' : 'requires';
   $self->{$key} or return;
 }
 

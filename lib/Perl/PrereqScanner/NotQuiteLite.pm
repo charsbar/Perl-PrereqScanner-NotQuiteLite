@@ -51,7 +51,7 @@ my %unsupported_packages = map {$_ => 1} qw(
 
 my %is_conditional = map {$_ => 1} qw(
   if elsif unless else given when
-  for foreach while until eval
+  for foreach while until
 );
 
 my %expects_expr_block = map {$_ => 1} qw(
@@ -1237,8 +1237,8 @@ sub _scan {
               $c->{stack} = $saved_stack;
             }
           }
+          $current_scope &= MASK_EVAL;
         }
-        $current_scope &= MASK_EVAL;
         $c->{eval} = ($current_scope | $parent_scope) & F_EVAL ? 1 : 0;
       }
       if ($token eq 'eval') {
@@ -1878,13 +1878,13 @@ _debug("REQUIRE TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
 
   my $c1 = substr($name, 0, 1);
   if ($c1 eq '5') {
-    $c->add(perl => $name);
+    $c->add_recommendation(perl => $name);
     return;
   }
   if ($c1 eq 'v') {
     my $c2 = substr($name, 1, 1);
     if ($c2 eq '5') {
-      $c->add(perl => $name);
+      $c->add_recommendation(perl => $name);
       return;
     }
     if ($c2 eq '6') {
@@ -1894,7 +1894,7 @@ _debug("REQUIRE TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
     }
   }
   if ($name =~ /\A(\w|::)+\z/) {
-    $c->add($name => 0);
+    $c->add_recommendation($name => 0);
     return;
   }
 }

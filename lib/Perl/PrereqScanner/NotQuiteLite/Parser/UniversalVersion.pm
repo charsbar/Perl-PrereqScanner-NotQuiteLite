@@ -18,7 +18,7 @@ sub parse_version_args {
   my @tokens_in_parens = @{$args_tokens->[0] || []};
   my ($module_version) = $tokens_in_parens[0][0][0];
   if ($module_version =~ /^v?[0-9._]+$/) {
-    $c->add($module => $module_version) if $c->has_added($module);
+    $c->add_recommendation($module => $module_version) if $c->has_added_recommendation($module);
   }
 }
 

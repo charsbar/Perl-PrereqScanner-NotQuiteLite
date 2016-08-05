@@ -3,7 +3,7 @@ use warnings;
 use Test::More;
 use t::Util;
 
-test('use in comment', <<'END', {}, used(qw/Apache::DBI/));
+test('use in comment', <<'END', {}, {}, used(qw/Apache::DBI/));
 BEGIN {
     # Only use Apache::DBI on dev.
     if (-f '/var/run/httpd-dev01') {

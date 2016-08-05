@@ -22,7 +22,7 @@ sub todo_test {
 }
 
 sub test {
-  my ($description, $string, $expected_requires, $expected_suggests) = @_;
+  my ($description, $string, $expected_requires, $expected_suggests, $expected_recommends) = @_;
   subtest $description => sub {
     my $scanner = Perl::PrereqScanner::NotQuiteLite->new(
       parsers => $PARSERS || [qw/:bundled/],
@@ -38,6 +38,12 @@ sub test {
       my $suggests_hash = $suggests ? $suggests->as_string_hash : {};
       is_deeply $suggests_hash => $expected_suggests, "suggests ok";
       note explain $suggests_hash;
+    }
+    if ($expected_recommends) {
+      my $recommends = $context->recommends;
+      my $recommends_hash = $recommends ? $recommends->as_string_hash : {};
+      is_deeply $recommends_hash => $expected_recommends, "recommends ok";
+      note explain $recommends_hash;
     }
     if ($EVAL) {
       eval "no strict; $string";
