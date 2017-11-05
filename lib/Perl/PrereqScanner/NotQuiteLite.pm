@@ -181,7 +181,7 @@ sub new {
   my @parsers = $class->_get_parsers($args{parsers});
   for my $parser (@parsers) {
     if (!exists $LOADED{$parser}) {
-      eval "require $parser; 1" or die $@;
+      eval "require $parser; 1" or die "Parser Error: $@";
       $LOADED{$parser} = $parser->can('register') ? $parser->register : undef;
     }
     my $parser_mapping = $LOADED{$parser} or next;
@@ -275,7 +275,7 @@ sub scan_string {
   {
     local $@;
     eval { $self->_scan($c, \$string, 0) };
-    push @{$c->{errors}}, $@ if $@;
+    push @{$c->{errors}}, "Scan Error: $@" if $@;
     if ($c->{redo}) {
       delete $c->{redo};
       delete $c->{ended};
@@ -1909,7 +1909,7 @@ _debug("USE TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
 
   if ($c->has_callback_for(use => $name)) {
     eval { $c->run_callback_for(use => $name, $tokens) };
-    warn $@ if $@;
+    warn "Callback Error: $@" if $@;
   }
 
   if (exists $unsupported_packages{$name}) {
@@ -2001,7 +2001,7 @@ _debug("NO TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
 
   if ($c->has_callback_for(no => $name)) {
     eval { $c->run_callback_for(no => $name, $tokens) };
-    warn $@ if $@;
+    warn "Callback Error: $@" if $@;
     return;
   }
 }
