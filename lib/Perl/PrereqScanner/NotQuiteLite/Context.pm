@@ -10,6 +10,7 @@ sub new {
 
   my %context = (
     requires => CPAN::Meta::Requirements->new,
+    file => $args{file},
   );
 
   if ($args{suggests}) {

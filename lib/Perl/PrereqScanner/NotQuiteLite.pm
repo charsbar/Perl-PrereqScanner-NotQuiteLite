@@ -230,6 +230,7 @@ sub scan_file {
   my ($self, $file) = @_;
   open my $fh, '<', $file or croak "Can't open $file: $!";
   my $code = do { local $/; <$fh> };
+  $self->{file} = $file;
   $self->scan_string($code);
 }
 
