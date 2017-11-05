@@ -6,12 +6,6 @@ plan skip_all => "TODO";
 
 # Supporting these seems to do more harm than good
 
-test(<<'TEST'); # MAKAROW/Tk-TM-0.53/lib/Tk/TM/DataObject.pm
- foreach (my $i=@[; $i<=$colcount; $i++) {
-   push(@$colspecs, ['','Entry']);
- }
-TEST
-
 test(<<'TEST'); # CSSON/OpenGbg-0.1302/lib/OpenGbg/Service/AirQuality/Measurement.pm
 use syntax 'qs';
 

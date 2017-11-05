@@ -104,4 +104,10 @@ test(<<'TEST'); # SPROUT/CSS-DOM-0.16/lib/CSS/DOM/PropertyParser.pm
    } @$list ];
 TEST
 
+test(<<'TEST'); # MAKAROW/Tk-TM-0.53/lib/Tk/TM/DataObject.pm
+ foreach (my $i=@[; $i<=$colcount; $i++) {
+   push(@$colspecs, ['','Entry']);
+ }
+TEST
+
 done_testing;

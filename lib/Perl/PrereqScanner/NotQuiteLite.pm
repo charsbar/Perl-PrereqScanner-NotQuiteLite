@@ -449,6 +449,10 @@ sub _scan {
           ($token, $token_desc, $token_type) = ('@', '@', 'VARIABLE');
           next;
         }
+      } elsif ($c2 eq '[') {
+        pos($$rstr) = $pos + 2;
+        ($token, $token_desc, $token_type) = ('@[', 'SPECIAL_VARIABLE', 'VARIABLE');
+        next;
       } elsif ($$rstr =~ m{\G(\@(?:$re_namespace))}gc) {
         ($token, $token_desc, $token_type) = ($1, '@NAME', 'VARIABLE');
         next;
