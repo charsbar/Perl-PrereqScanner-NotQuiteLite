@@ -1265,7 +1265,7 @@ sub _scan {
       }
       if ($current_scope & F_EVAL) {
         if ($token_type eq 'STRING') {
-          if ($token->[0] =~ /\b(?:use|require|no)\s+[A-Za-z]/) {
+          if ($token->[0] =~ /\b(?:(?:use|no)\s+[A-Za-z]|require\s+(?:q[qw]?.|['"])?[A-Za-z])/) {
             my $eval_string = $token->[0];
             if (defined $eval_string and $eval_string ne '') {
               $eval_string =~ s/\\(.)/$1/g;
