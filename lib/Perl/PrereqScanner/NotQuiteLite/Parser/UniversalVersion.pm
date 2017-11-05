@@ -46,7 +46,7 @@ Perl::PrereqScanner::NotQuiteLite::Parser::UniversalVersion
 
 =head1 DESCRIPTION
 
-This parser is to deal with a VERSION method called by a	 module.
+This parser is to deal with a VERSION method called by a module.
 
 =head1 AUTHOR
 
