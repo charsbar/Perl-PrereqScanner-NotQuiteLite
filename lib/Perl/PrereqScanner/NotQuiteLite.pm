@@ -1263,7 +1263,7 @@ sub _scan {
       if (exists $expects_block{$token}) {
         $waiting_for_a_block = 1;
       }
-      if ($current_scope & F_EVAL) {
+      if ($current_scope & F_EVAL or ($parent_scope & F_EVAL and (!@{$c->{stack}} or $c->{stack}[-1][0] ne '{'))) {
         if ($token_type eq 'STRING') {
           if ($token->[0] =~ /\b(?:(?:use|no)\s+[A-Za-z]|require\s+(?:q[qw]?.|['"])?[A-Za-z])/) {
             my $eval_string = $token->[0];
