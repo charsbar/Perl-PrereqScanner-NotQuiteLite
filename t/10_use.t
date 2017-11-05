@@ -55,4 +55,15 @@ test('use method', <<'END', {});
 __PACKAGE__->use("Test::More");
 END
 
+# NKH/Text-Editor-Vip-0.08.1/lib/Text/Editor/Vip/Color/Color.pm
+test('pod', <<'END', {});
+=TODO
+
+tests
+
+do not use print for output but some Vip error or login func
+
+=cut
+END
+
 done_testing;
