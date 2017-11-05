@@ -79,7 +79,7 @@ sub convert_string_tokens {
     } elsif ($desc eq 'STRING') {
       push @tokens, $token->[0];
     } elsif ($desc eq 'QUOTED_WORD_LIST') {
-      push @tokens, split / /, $token->[0];
+      push @tokens, grep {defined $_ and $_ ne ''} split /\s/, $token->[0];
     } else {
       push @tokens, $copied_token;
     }
