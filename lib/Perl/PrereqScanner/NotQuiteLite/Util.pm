@@ -67,7 +67,7 @@ sub convert_string_tokens {
   my @copied_tokens = @$org_tokens;
   while(my $copied_token = shift @copied_tokens) {
     my ($token, $desc) = @$copied_token;
-    if ($desc eq '()') {
+    if ($desc and $desc eq '()') {
       unshift @copied_tokens, @$token;
       next;
     }
