@@ -15,4 +15,10 @@ test('eval{"string"}', <<'END', {}, {});
 eval{'use Test::More'};
 END
 
+test('eval heredoc', <<'END', {}, {'Test::More' => 0});
+eval <<'EOF';
+require Test::More;
+EOF
+END
+
 done_testing;

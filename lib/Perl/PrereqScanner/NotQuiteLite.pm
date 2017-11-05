@@ -1281,6 +1281,23 @@ sub _scan {
             }
           }
           $current_scope &= MASK_EVAL;
+        } elsif ($token_desc eq 'HEREDOC') {
+          if ($token->[0] =~ /\b(?:use|require|no)\s+[A-Za-z]/) {
+            my $eval_string = $token->[0];
+            if (defined $eval_string and $eval_string ne '') {
+              $eval_string =~ s/\\(.)/$1/g;
+              pos($eval_string) = 0;
+              $c->{eval} = 1;
+              my $saved_stack = $c->{stack};
+              $c->{stack} = [];
+              eval { $self->_scan($c, \$eval_string, (
+                ($current_scope | $parent_scope | F_STRING_EVAL) &
+                F_RESCAN
+              ))};
+              $c->{stack} = $saved_stack;
+            }
+          }
+          $current_scope &= MASK_EVAL;
         }
         $c->{eval} = ($current_scope | $parent_scope) & F_EVAL ? 1 : 0;
       }
@@ -1603,10 +1620,15 @@ sub _match_heredoc {
   unless ($$rstr =~ m{\G.*?\n(?=\Q$label\E\n)}gcs) {
     return _match_error($rstr, qq{Missing here doc terminator ('$label')});
   }
+  my $ldpos = pos($$rstr);
   $$rstr =~ m{\G\Q$label\E\n}gc;
   my $ld2pos = pos($$rstr);
 
-  my $heredoc = substr($$rstr, $startpos, $extrapos-$startpos)."\n".substr($$rstr, $str1pos, $ld2pos-$str1pos);
+  my $heredoc = [
+    substr($$rstr, $str1pos, $ldpos-$str1pos),
+    substr($$rstr, $startpos, $extrapos-$startpos),
+    substr($$rstr, $ldpos, $ld2pos-$ldpos),
+  ];
   substr($$rstr, $str1pos, $ld2pos - $str1pos) = '';
   pos($$rstr) = $extrapos;
   return $heredoc;
