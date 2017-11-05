@@ -21,9 +21,10 @@ test('require version_number', <<'END', {perl => '5.010001'});
 require 5.010001;
 END
 
-test('require file', <<'END', {});
+test('require file', <<'END', {'Test::More' => 0});
 my $file = "Test/More.pm";
 require "Test/More.pm";
+require "cgi-lib.pl";
 require $file;
 END
 

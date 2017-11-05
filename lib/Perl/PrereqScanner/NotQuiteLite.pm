@@ -1924,7 +1924,14 @@ _debug("REQUIRE TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
   # TODO: see if the token is WORD or not?
   my $name_token = shift @$tokens or return;
   my $name = $name_token->[0];
-  return if !defined $name or ref $name or $name eq '';
+  if (ref $name) {
+    $name = $name->[0];
+    return if $name =~ /\.pl$/i;
+
+    $name =~ s|/|::|g;
+    $name =~ s|\.pm$||i;
+  }
+  return if !defined $name or $name eq '';
 
   my $c1 = substr($name, 0, 1);
   if ($c1 eq '5') {
@@ -1943,7 +1950,7 @@ _debug("REQUIRE TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
       return;
     }
   }
-  if ($name =~ /\A(\w|::)+\z/) {
+  if (is_module_name($name)) {
     $c->add_recommendation($name => 0);
     return;
   }
