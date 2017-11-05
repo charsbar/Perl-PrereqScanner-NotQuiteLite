@@ -367,6 +367,13 @@ sub _scan {
         } elsif ($$rstr =~ m{\G(\$\#(?:$re_namespace))}gc) {
           ($token, $token_desc, $token_type) = ($1, '$#NAME', 'TERM');
           next;
+        } elsif ($prev_token_type eq 'ARROW') {
+          my $c3 = substr($$rstr, $pos + 2, 1);
+          if ($c3 eq '*') {
+            pos($$rstr) = $pos + 3;
+            ($token, $token_desc, $token_type) = ('$#*', 'VARIABLE', 'VARIABLE');
+            next;
+          }
         } else {
           pos($$rstr) = $pos + 2;
           ($token, $token_desc, $token_type) = ('$#', 'SPECIAL_VARIABLE', 'TERM');
@@ -431,6 +438,17 @@ sub _scan {
           ($token, $token_desc, $token_type) = ('@$', '@$', 'VARIABLE');
           next;
         }
+      } elsif ($prev_token_type eq 'ARROW') {
+        # postderef
+        if ($c2 eq '*') {
+          pos($$rstr) = $pos + 2;
+          ($token, $token_desc, $token_type) = ('@*', '@*', 'VARIABLE');
+          next;
+        } else {
+          pos($$rstr) = $pos + 1;
+          ($token, $token_desc, $token_type) = ('@', '@', 'VARIABLE');
+          next;
+        }
       } elsif ($$rstr =~ m{\G(\@(?:$re_namespace))}gc) {
         ($token, $token_desc, $token_type) = ($1, '@NAME', 'VARIABLE');
         next;
@@ -467,6 +485,16 @@ sub _scan {
         pos($$rstr) = $pos + 1;
         ($token, $token_desc, $token_type) = ($c1, $c1, 'OP');
         next;
+      } elsif ($prev_token_type eq 'ARROW') {
+        if ($c2 eq '*') {
+          pos($$rstr) = $pos + 2;
+          ($token, $token_desc, $token_type) = ('%*', '%*', 'VARIABLE');
+          next;
+        } else {
+          pos($$rstr) = $pos + 1;
+          ($token, $token_desc, $token_type) = ('%', '%', 'VARIABLE');
+          next;
+        }
       } else {
         pos($$rstr) = $pos + 1;
         ($token, $token_desc, $token_type) = ($c1, $c1, 'VARIABLE');
@@ -494,6 +522,10 @@ sub _scan {
         if (substr($$rstr, $pos + 2, 1) eq '=') {
           pos($$rstr) = $pos + 3;
           ($token, $token_desc, $token_type) = ('**=', '**=', 'OP');
+          next;
+        } elsif ($prev_token_type eq 'ARROW') {
+          pos($$rstr) = $pos + 2;
+          ($token, $token_desc, $token_type) = ('**', '**', 'VARIABLE');
           next;
         } else {
           pos($$rstr) = $pos + 2;
@@ -540,6 +572,12 @@ sub _scan {
       } elsif ($$rstr =~ m{\G(\&\$(?:$re_namespace))}gc) {
         ($token, $token_desc, $token_type) = ($1, '&$NAME', 'TERM');
         next;
+      } elsif ($prev_token_type eq 'ARROW') {
+        if ($c2 eq '*') {
+          pos($$rstr) = $pos + 2;
+          ($token, $token_desc, $token_type) = ('&*', '&*', 'VARIABLE');
+          next;
+        }
       } else {
         pos($$rstr) = $pos + 1;
         ($token, $token_desc, $token_type) = ($c1, $c1, 'OP');
