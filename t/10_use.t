@@ -50,4 +50,9 @@ test('use in a block', <<'END', {'Test::More' => 0});
 {use Test::More}
 END
 
+local $t::Util::EVAL = 0;
+test('use method', <<'END', {});
+__PACKAGE__->use("Test::More");
+END
+
 done_testing;

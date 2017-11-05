@@ -1348,6 +1348,11 @@ sub _scan {
           my $first_token = $tokens[0][0];
           if ($first_token eq '->') {
             $first_token = $tokens[1][0];
+            # ignore ->use and ->no
+            # ->require may be from UNIVERSAL::require
+            if ($first_token eq 'use' or $first_token eq 'no') {
+              $first_token = '';
+            }
           }
           my $cond = (($current_scope | $parent_scope) & (F_CONDITIONAL|F_SIDEFF)) ? 1 : 0;
           if (exists $c->{callback}{$first_token}) {
