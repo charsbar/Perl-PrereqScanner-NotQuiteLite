@@ -1652,7 +1652,10 @@ sub _scan_re {
         }
       }
       _debug(" end of block $rdel") if !!DEBUG_RE;
-      (my $expected = $rdel) =~ tr/)}]>/({[</;
+      my $expected = $rdel;
+      if ($ldel ne $rdel) {
+        $expected =~ tr/)}]>/({[</;
+      }
       while(my $nested = pop @nesting) {
         last if $nested eq $expected;
       }
