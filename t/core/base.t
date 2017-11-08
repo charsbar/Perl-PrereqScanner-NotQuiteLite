@@ -23,4 +23,8 @@ use base qw(
 );
 END
 
+test('base bareword (only works without strict)', <<'END', {base => 0, Exporter => 0});
+use base Exporter;
+END
+
 done_testing;

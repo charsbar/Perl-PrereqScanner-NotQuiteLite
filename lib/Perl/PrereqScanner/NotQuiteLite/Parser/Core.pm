@@ -43,7 +43,15 @@ sub parse_base_args {
   if (is_version($tokens->[0])) {
     $c->add($used_module => shift @$tokens);
   }
-  $c->add($_ => 0) for grep {!ref $_} @$tokens;
+  for my $token (@$tokens) {
+    my $module = $token;
+    if (ref $module and $module->[1] eq 'WORD') {
+      $module = $module->[0];
+    }
+    if (is_module_name($module)) {
+      $c->add($module => 0);
+    }
+  }
 }
 
 sub parse_parent_args {
