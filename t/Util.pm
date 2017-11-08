@@ -50,6 +50,7 @@ sub test {
       ok !$@, "no eval error";
       note $@ if $@;
     }
+    ok !@{$context->{errors} || []}, 'no errors' or note explain $context->{errors};
   };
 }
 
