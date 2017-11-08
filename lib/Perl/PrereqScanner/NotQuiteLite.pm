@@ -1958,13 +1958,13 @@ _debug("REQUIRE TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
 
   my $c1 = substr($name, 0, 1);
   if ($c1 eq '5') {
-    $c->add_recommendation(perl => $name);
+    $c->add_conditional(perl => $name);
     return;
   }
   if ($c1 eq 'v') {
     my $c2 = substr($name, 1, 1);
     if ($c2 eq '5') {
-      $c->add_recommendation(perl => $name);
+      $c->add_conditional(perl => $name);
       return;
     }
     if ($c2 eq '6') {
@@ -1974,7 +1974,7 @@ _debug("REQUIRE TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
     }
   }
   if (is_module_name($name)) {
-    $c->add_recommendation($name => 0);
+    $c->add_conditional($name => 0);
     return;
   }
 }

@@ -30,7 +30,7 @@ sub parse_version_args {
     return;
   }
   if ($module_version =~ /^v?[0-9._]+$/) {
-    $c->add_recommendation($module => $module_version) if $c->has_added_recommendation($module);
+    $c->add_conditional($module => $module_version) if $c->has_added_conditional($module);
   }
 }
 

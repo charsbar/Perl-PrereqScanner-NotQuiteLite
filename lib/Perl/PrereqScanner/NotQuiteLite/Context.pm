@@ -84,6 +84,24 @@ sub add_recommendation {
   $CMR->add_minimum($module, "$version");
 }
 
+sub add_suggestion {
+  my ($self, $module, $version) = @_;
+  return unless is_module_name($module);
+
+  my $CMR = $self->_object('suggests') or return;
+  $version = 0 unless defined $version;
+  $CMR->add_minimum($module, "$version");
+}
+
+sub add_conditional {
+  my ($self, $module, $version) = @_;
+  return unless is_module_name($module);
+
+  my $CMR = $self->_object('conditional') or return;
+  $version = 0 unless defined $version;
+  $CMR->add_minimum($module, "$version");
+}
+
 sub has_added {
   my ($self, $module) = @_;
   return unless is_module_name($module);
@@ -100,14 +118,29 @@ sub has_added_recommendation {
   defined $CMR->requirements_for_module($module) ? 1 : 0;
 }
 
+sub has_added_suggestion {
+  my ($self, $module) = @_;
+  return unless is_module_name($module);
+
+  my $CMR = $self->_object('suggests') or return;
+  defined $CMR->requirements_for_module($module) ? 1 : 0;
+}
+
+sub has_added_conditional {
+  my ($self, $module) = @_;
+  return unless is_module_name($module);
+
+  my $CMR = $self->_object('conditional') or return;
+  defined $CMR->requirements_for_module($module) ? 1 : 0;
+}
+
 sub _object {
-  my ($self, $allow_recommends) = @_;
-  my $key;
+  my ($self, $key) = @_;
   if ($self->{eval}) {
     $key = 'suggests';
   } elsif ($self->{force_cond}) {
-     $key = 'recommends';
-  } elsif ($allow_recommends and $allow_recommends eq 'recommends') {
+    $key = 'recommends';
+  } elsif ($key && $key eq 'conditional') {
     if ($self->{cond}) {
       $key = 'recommends';
     } elsif (grep {$_->[0] eq '{' and $_->[2] ne 'BEGIN'} @{$self->{stack} || []}) {
@@ -115,7 +148,7 @@ sub _object {
     } else {
       $key = 'requires';
     }
-  } else {
+  } elsif (!$key) {
     $key = 'requires';
   }
   $self->{$key} or return;
