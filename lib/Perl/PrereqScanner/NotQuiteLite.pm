@@ -1181,7 +1181,7 @@ sub _scan {
           $current_scope |= F_SENTENCE_END|F_EXPR_END;
           next;
         }
-      } elsif (exists $defined_keywords{$token} and ($prev_token_type ne 'KEYWORD' or !$expects_word{$prev_token})) {
+      } elsif (exists $defined_keywords{$token} and ($prev_token_type ne 'KEYWORD' or !$expects_word{$prev_token}) or ($prev_token eq 'sub' and $token eq 'BEGIN')) {
         ($token_desc, $token_type) = ('KEYWORD', 'KEYWORD');
         push @keywords, $token unless $token eq 'undef';
       } else {

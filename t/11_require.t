@@ -40,4 +40,8 @@ test('require Module in sub', <<'END', {'Test::More' => 0});
 BEGIN { require Test::More; }
 END
 
+test('require Module in sub', <<'END', {'Test::More' => 0});
+sub BEGIN { require Test::More; }
+END
+
 done_testing;
