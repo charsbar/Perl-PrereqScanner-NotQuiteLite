@@ -1690,7 +1690,7 @@ sub _scan_re {
         _debug(" character class $1") if !!DEBUG_RE;
         next;
       }
-      if ($$rstr =~ m/\G(\[[^\\\]]]*(\\.[^\\\]]]*)*\])/gcs) {
+      if ($$rstr =~ m/\G(\[[^\\\]]]*?(\\.[^\\\]]]*)*\])/gcs) {
         _debug(" character class: $1") if !!DEBUG_RE;
         next;
       }
