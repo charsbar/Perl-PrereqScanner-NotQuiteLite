@@ -28,4 +28,16 @@ require "cgi-lib.pl";
 require $file;
 END
 
+test('require Module in if', <<'END', {}, {}, {'Test::More' => 0});
+if (1) { require Test::More; }
+END
+
+test('require Module in sub', <<'END', {}, {}, {'Test::More' => 0});
+sub foo { require Test::More; }
+END
+
+test('require Module in sub', <<'END', {'Test::More' => 0});
+BEGIN { require Test::More; }
+END
+
 done_testing;
