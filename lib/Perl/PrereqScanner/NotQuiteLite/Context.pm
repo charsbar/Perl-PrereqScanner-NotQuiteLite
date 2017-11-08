@@ -102,13 +102,19 @@ sub has_added_recommendation {
 
 sub _object {
   my ($self, $allow_recommends) = @_;
-  my ($self, $key) = @_;
+  my $key;
   if ($self->{eval}) {
     $key = 'suggests';
-  } elsif ($self->{cond}) {
-    $key = 'recommends';
-  } elsif (grep {$_->[0] eq '{' and $_->[2] ne 'BEGIN'} @{$self->{stack} || []}) {
-    $key = 'recommends';
+  } elsif ($self->{force_cond}) {
+     $key = 'recommends';
+  } elsif ($allow_recommends and $allow_recommends eq 'recommends') {
+    if ($self->{cond}) {
+      $key = 'recommends';
+    } elsif (grep {$_->[0] eq '{' and $_->[2] ne 'BEGIN'} @{$self->{stack} || []}) {
+      $key = 'recommends';
+    } else {
+      $key = 'requires';
+    }
   } else {
     $key = 'requires';
   }

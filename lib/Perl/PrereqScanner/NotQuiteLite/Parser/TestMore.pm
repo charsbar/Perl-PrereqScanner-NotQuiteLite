@@ -2,6 +2,7 @@ package Perl::PrereqScanner::NotQuiteLite::Parser::TestMore;
 
 use strict;
 use warnings;
+use Perl::PrereqScanner::NotQuiteLite::Util;
 
 sub register { return {
   use => {
@@ -16,12 +17,30 @@ sub parse_test_more_args {
     'done_testing',
     [$class, 'parse_done_testing_args', $used_module],
   );
+
+  $c->register_keyword(
+    'plan',
+    [$class, 'parse_plan_args', $used_module],
+  );
 }
 
 sub parse_done_testing_args {
   my ($class, $c, $used_module, $raw_tokens) = @_;
 
   $c->add($used_module => '0.88');
+}
+
+sub parse_plan_args {
+  my ($class, $c, $used_module, $raw_tokens) = @_;
+
+  my $tokens = convert_string_tokens($raw_tokens);
+  shift @$tokens; # discard plan
+
+  if ($tokens->[0] and $tokens->[0][0] eq 'skip_all') {
+    if (grep {$_->[0] eq '{' and $_->[2] eq 'BEGIN'} @{$c->{stack} || []}) {
+      $c->{force_cond} = 1;
+    }
+  }
 }
 
 1;
