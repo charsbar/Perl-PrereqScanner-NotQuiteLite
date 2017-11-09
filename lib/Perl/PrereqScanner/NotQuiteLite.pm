@@ -9,7 +9,7 @@ use Perl::PrereqScanner::NotQuiteLite::Util;
 our $VERSION = '0.50';
 
 our @BUNDLED_PARSERS = qw/
-  Aliased Autouse Core Inline Mixin ModuleRuntime Moose Plack POE Superclass
+  Aliased Autouse Core Inline Mixin ModuleRuntime MojoBase Moose Plack POE Superclass
   TestMore UniversalVersion
 /;
 our @DEFAULT_PARSERS = qw/Core Moose/;
