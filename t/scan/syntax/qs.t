@@ -1,15 +1,14 @@
 use strict;
 use warnings;
+use Test::More;
 use t::scan::Util;
 
-plan skip_all => "TODO";
-
-# Supporting these seems to do more harm than good
-
-test(<<'TEST'); # CSSON/OpenGbg-0.1302/lib/OpenGbg/Service/AirQuality/Measurement.pm
+test(<<'END'); # CSSON/OpenGbg-0.1402/lib/OpenGbg/Service/AirQuality/Measurement.pm
 use syntax 'qs';
 
-method air_quality_to_text {
+sub air_quality_to_text {
+    my $self = shift;
+
     no warnings 'numeric';
     return sprintf qs{
         Total index:                               [ %4s ] [ %-16s ]
@@ -53,6 +52,6 @@ method air_quality_to_text {
     $self->pm2_5_levels,
     ;
 }
-TEST
+END
 
 done_testing;
