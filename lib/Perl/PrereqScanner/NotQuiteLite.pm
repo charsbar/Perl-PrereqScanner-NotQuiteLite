@@ -9,7 +9,7 @@ use Perl::PrereqScanner::NotQuiteLite::Util;
 our $VERSION = '0.50';
 
 our @BUNDLED_PARSERS = qw/
-  Aliased Core Moose Plack POE Superclass
+  Aliased Autouse Core Moose Plack POE Superclass
   TestMore UniversalVersion
 /;
 our @DEFAULT_PARSERS = qw/Core Moose/;
