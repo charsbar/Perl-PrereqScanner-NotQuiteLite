@@ -1327,6 +1327,10 @@ sub _scan {
         my $scanned_tokens = $self->_scan($c, $rstr, (
           $child_scope & F_RESCAN
         ));
+        if ($token eq '{' and $current_scope & F_EVAL) {
+          $current_scope &= MASK_EVAL;
+          $c->{eval} = ($current_scope | $parent_scope) & F_EVAL ? 1 : 0;
+        }
         if ($current_scope & F_KEEP_TOKENS) {
           my $start = pop @tokens || '';
           my $end = pop @$scanned_tokens || '';

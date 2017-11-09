@@ -18,4 +18,16 @@ use Catalyst ('-Debug',
 );
 END
 
+# FLORA/Catalyst-Engine-Apache-1.16/t/lib/PluginTestApp.pm
+# TestApp::Plugin::ParameterizedRole is ignored for now
+test('eval', <<'END', {Catalyst => 0, 'Catalyst::Plugin::Test::Plugin' => 0, 'TestApp::Plugin::FullyQualified' => 0});
+use Catalyst (
+    'Test::Plugin',
+    '+TestApp::Plugin::FullyQualified',
+    (eval { require MooseX::Role::Parameterized; 1 }
+        ? ('+TestApp::Plugin::ParameterizedRole' => { method_name => 'affe' })
+        : ()),
+);
+END
+
 done_testing;
