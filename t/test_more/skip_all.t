@@ -41,4 +41,14 @@ sub BEGIN {
 use strict;
 END
 
+test('"skip_all"', <<'END', {'Test::More' => 0}, {}, {'strict' => 0});
+use Test::More;
+
+sub BEGIN {
+  plan 'skip_all' => 'foo' if $^O eq 'MSWin32';
+}
+
+use strict;
+END
+
 done_testing;

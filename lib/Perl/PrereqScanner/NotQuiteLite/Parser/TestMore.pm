@@ -36,7 +36,10 @@ sub parse_plan_args {
   my $tokens = convert_string_tokens($raw_tokens);
   shift @$tokens; # discard plan
 
-  if ($tokens->[0] and $tokens->[0][0] eq 'skip_all') {
+  my $first_token = $tokens->[0] or return;
+  $first_token = $first_token->[0] if ref $first_token;
+
+  if ($first_token eq 'skip_all') {
     if (grep {$_->[0] eq '{' and $_->[2] eq 'BEGIN'} @{$c->{stack} || []}) {
       $c->{force_cond} = 1;
     }
