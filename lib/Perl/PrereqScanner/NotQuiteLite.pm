@@ -1395,6 +1395,33 @@ sub _scan {
             $c->{cond} = $cond;
             $c->run_callback_for(method => $first_token, \@tokens);
           }
+          if ($current_scope & F_SIDEFF) {
+            $current_scope &= MASK_SIDEFF;
+            while(my $token = shift @tokens) {
+              last if $has_sideff{$token->[0]};
+            }
+            $current_scope &= F_SIDEFF if grep {$has_sideff{$_->[0]}} @tokens;
+            if (@tokens) {
+              $first_token = $tokens[0][0];
+              $cond = (($current_scope | $parent_scope) & (F_CONDITIONAL|F_SIDEFF)) ? 1 : 0;
+              if (exists $c->{callback}{$first_token}) {
+                $c->{current_scope} = \$current_scope;
+                $c->{cond} = $cond;
+                $c->{callback}{$first_token}->($c, $rstr, \@tokens);
+              }
+              if (exists $c->{keyword}{$first_token}) {
+                $c->{current_scope} = \$current_scope;
+                $c->{cond} = $cond;
+                $c->run_callback_for(keyword => $first_token, \@tokens);
+              }
+              if (exists $c->{method}{$first_token} and $caller_package) {
+                unshift @tokens, [$caller_package, 'WORD'];
+                $c->{current_scope} = \$current_scope;
+                $c->{cond} = $cond;
+                $c->run_callback_for(method => $first_token, \@tokens);
+              }
+            }
+          }
         }
         @tokens = ();
         @keywords = ();

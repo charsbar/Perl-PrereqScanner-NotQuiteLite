@@ -53,4 +53,11 @@ use Class::Load;
 Class::Load::load_class('Test::More');
 END
 
+# ALEXBIO/App-gist-0.16/lib/App/gist.pm
+test('try_load_class with if', <<'END', {'Class::Load' => 0}, {'Config::Identity::GitHub' => 0});
+use Class::Load 'try_load_class';
+    my %identity = Config::Identity::GitHub -> load
+        if try_load_class('Config::Identity::GitHub');
+END
+
 done_testing;
