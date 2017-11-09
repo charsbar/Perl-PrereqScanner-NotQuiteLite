@@ -28,21 +28,25 @@ sub new {
   bless \%context, $class;
 }
 
-sub register_keyword {
+sub register_keyword_parser {
   my ($self, $keyword, $parser_info) = @_;
   $self->{keyword}{$keyword} = $parser_info;
 }
 
-sub remove_keyword {
+sub remove_keyword_parser {
   my ($self, $keyword) = @_;
   delete $self->{keyword}{$keyword};
   delete $self->{keyword} if !%{$self->{keyword}};
 }
 
-sub register_method {
+sub register_method_parser {
   my ($self, $method, $parser_info) = @_;
   $self->{method}{$method} = $parser_info;
 }
+
+*register_keyword = \&register_keyword_parser;
+*remove_keyword = \&remove_keyword_parser;
+*register_method = \&register_method_parser;
 
 sub requires { shift->{requires} }
 sub recommends { shift->_optional('recommends') }
@@ -199,15 +203,15 @@ with different versions as many times as you wish. The actual
 minimum version for the module is calculated inside
 (by L<CPAN::Meta::Requirements>).
 
-=head2 register_keyword, remove_keyword, register_method
+=head2 register_keyword_parser, remove_keyword_parser, register_method_parser
 
-  $c->register_keyword(
+  $c->register_keyword_parser(
     'func_name',
     [$parser_class, 'parser_for_the_func', $used_module],
   );
-  $c->remove_keyword('func_name');
+  $c->remove_keyword_parser('func_name');
 
-  $c->register_method(
+  $c->register_method_parser(
     'method_name',
     [$parser_class, 'parser_for_the_method', $used_module],
   );

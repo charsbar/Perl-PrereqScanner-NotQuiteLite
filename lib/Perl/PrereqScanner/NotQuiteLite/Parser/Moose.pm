@@ -22,11 +22,11 @@ sub register { return {
 sub parse_moose_args {
   my ($class, $c, $used_module, $raw_tokens) = @_;
 
-  $c->register_keyword(
+  $c->register_keyword_parser(
     'extends',
     [$class, 'parse_extends_args', $used_module],
   );
-  $c->register_keyword(
+  $c->register_keyword_parser(
     'with',
     [$class, 'parse_with_args', $used_module],
   ) unless $used_module eq 'Mo'; # Mo doesn't support with

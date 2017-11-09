@@ -13,12 +13,12 @@ sub register { return {
 sub parse_test_more_args {
   my ($class, $c, $used_module, $raw_tokens) = @_;
 
-  $c->register_keyword(
+  $c->register_keyword_parser(
     'done_testing',
     [$class, 'parse_done_testing_args', $used_module],
   );
 
-  $c->register_keyword(
+  $c->register_keyword_parser(
     'plan',
     [$class, 'parse_plan_args', $used_module],
   );
