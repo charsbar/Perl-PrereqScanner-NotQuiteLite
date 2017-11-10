@@ -2,6 +2,7 @@ requires 'CPAN::Meta::Prereqs' => '2.113640';
 requires 'CPAN::Meta::Requirements' => '2.113640';
 requires 'Exporter' => '5.57'; # for import
 requires 'Module::Find';
+requires 'Regexp::Trie';
 
 suggests 'Data::Dump';
 
