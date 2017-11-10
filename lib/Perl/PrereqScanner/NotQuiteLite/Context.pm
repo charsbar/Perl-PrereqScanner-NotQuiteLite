@@ -3,6 +3,7 @@ package Perl::PrereqScanner::NotQuiteLite::Context;
 use strict;
 use warnings;
 use CPAN::Meta::Requirements;
+use Regexp::Trie;
 use Perl::PrereqScanner::NotQuiteLite::Util;
 
 sub new {
@@ -11,6 +12,7 @@ sub new {
   my %context = (
     requires => CPAN::Meta::Requirements->new,
     file => $args{file},
+    quotelike => [qw/q qq/],
   );
 
   if ($args{suggests}) {
@@ -173,6 +175,25 @@ sub run_callback_for {
   return unless $self->_object;
   my ($parser, $method, @cb_args) = @{$self->{$type}{$name}};
   $parser->$method($self, @cb_args, @args);
+}
+
+sub quotelike_re {
+  my $self = shift;
+  $self->{quotelike_re} ||= $self->_quotelike_re;
+}
+
+sub _quotelike_re {
+  my $self = shift;
+  my $trie = Regexp::Trie->new;
+  $trie->add($_) for @{$self->{quotelike} || []};
+  $self->{quotelike_re} = $trie->regexp;
+}
+
+sub register_quotelike_keywords {
+  my ($self, @keywords) = @_;
+  push @{$self->{quotelike}}, @keywords;
+  $self->{defined_keywords}{$_} = 0 for @keywords;
+  $self->_quotelike_re;
 }
 
 1;

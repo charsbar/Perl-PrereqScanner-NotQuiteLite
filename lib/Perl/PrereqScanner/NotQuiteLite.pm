@@ -48,7 +48,6 @@ my %unsupported_packages = map {$_ => 1} qw(
   Text::RewriteRules
   Regexp::Grammars
   tt
-  syntax
 );
 
 my %is_conditional = map {$_ => 1} qw(
@@ -1093,7 +1092,8 @@ sub _scan {
       }
 
       if ($c1 eq 'q') {
-        if ($$rstr =~ m{\G((?:qq?)\b(?!\s*=>))}gc) {
+        my $quotelike_re = $c->quotelike_re;
+        if ($$rstr =~ m{\G((?:$quotelike_re)\b(?!\s*=>))}gc) {
           if (my $quotelike = $self->_match_quotelike($c, $rstr, $1)) {
             ($token, $token_desc, $token_type) = ($quotelike, 'STRING', 'STRING');
             next;
