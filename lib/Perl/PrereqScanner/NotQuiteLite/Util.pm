@@ -67,9 +67,10 @@ sub convert_string_tokens {
   my $org_tokens = shift;
   my @tokens;
   my @copied_tokens = @$org_tokens;
+  my $prev = '';
   while(my $copied_token = shift @copied_tokens) {
     my ($token, $desc) = @$copied_token;
-    if ($desc and $desc eq '()') {
+    if ($desc and $desc eq '()' and $prev ne 'WORD') {
       unshift @copied_tokens, @$token;
       next;
     }
@@ -85,6 +86,7 @@ sub convert_string_tokens {
     } else {
       push @tokens, $copied_token;
     }
+    $prev = $desc;
   }
   \@tokens;
 }

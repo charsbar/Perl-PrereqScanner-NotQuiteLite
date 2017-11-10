@@ -27,4 +27,9 @@ test('base bareword (only works without strict)', <<'END', {base => 0, Exporter 
 use base Exporter;
 END
 
+test('base + function', <<'END', {base => 0});
+sub function {}
+use base function();
+END
+
 done_testing;

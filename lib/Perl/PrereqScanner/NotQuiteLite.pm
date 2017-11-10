@@ -1387,6 +1387,7 @@ sub _scan {
           if (exists $c->{keyword}{$first_token}) {
             $c->{current_scope} = \$current_scope;
             $c->{cond} = $cond;
+            $tokens[0][1] = 'KEYWORD';
             $c->run_callback_for(keyword => $first_token, \@tokens);
           }
           if (exists $c->{method}{$first_token} and $caller_package) {
@@ -1412,6 +1413,7 @@ sub _scan {
               if (exists $c->{keyword}{$first_token}) {
                 $c->{current_scope} = \$current_scope;
                 $c->{cond} = $cond;
+                $tokens[0][1] = 'KEYWORD';
                 $c->run_callback_for(keyword => $first_token, \@tokens);
               }
               if (exists $c->{method}{$first_token} and $caller_package) {
@@ -1450,6 +1452,7 @@ sub _scan {
         $c->{callback}{$first_token}->($c, $rstr, \@tokens);
       }
       if (exists $c->{keyword}{$first_token}) {
+        $tokens[0][1] = 'KEYWORD';
         $c->run_callback_for(keyword => $first_token, \@tokens);
       }
     }

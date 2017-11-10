@@ -43,10 +43,12 @@ sub parse_base_args {
   if (is_version($tokens->[0])) {
     $c->add($used_module => shift @$tokens);
   }
-  for my $token (@$tokens) {
+  while(my $token = shift @$tokens) {
     my $module = $token;
     if (ref $module and $module->[1] eq 'WORD') {
+      # allow bareword, but disallow function()
       $module = $module->[0];
+      next if @$tokens and ref $tokens->[0] and ($tokens->[0][1] || '') eq '()';
     }
     if (is_module_name($module)) {
       $c->add($module => 0);
