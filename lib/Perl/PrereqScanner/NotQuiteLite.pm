@@ -1941,7 +1941,7 @@ _debug("USE TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
       return;
     }
   }
-  if ($name eq 'utf8') {
+  if ($c->enables_utf8($name)) {
     $c->add($name => 0);
     $c->{utf8} = 1;
     if (!$c->{decoded}) {

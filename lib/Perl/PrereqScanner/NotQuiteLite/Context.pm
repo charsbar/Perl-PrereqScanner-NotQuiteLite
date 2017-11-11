@@ -21,6 +21,12 @@ my %default_expects_word = map {$_ => 1} qw(
   use require no sub
 );
 
+my %enables_utf8 = map {$_ => 1} qw(
+  utf8
+  Mojo::Base
+  Mojo::Base::Che
+);
+
 my $default_g_re_prototype = qr{\G(\([^\)]*?\))};
 
 sub new {
@@ -272,6 +278,10 @@ sub token_defines_sub {
   exists $self->{defines_sub}{$token} ? 1 : 0;
 }
 
+sub enables_utf8 {
+  my ($self, $module) = @_;
+  exists $enables_utf8{$module} ? 1 : 0;
+}
 
 sub _keywords {(
     '__FILE__' => 1,
