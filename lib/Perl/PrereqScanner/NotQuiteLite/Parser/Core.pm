@@ -50,6 +50,10 @@ sub parse_base_args {
       $module = $module->[0];
       next if @$tokens and ref $tokens->[0] and ($tokens->[0][1] || '') eq '()';
     }
+    # bareword in parentheses
+    if (ref $module and ref $module->[0]) {
+      $module = $module->[0][0];
+    }
     if (is_module_name($module)) {
       $c->add($module => 0);
     }

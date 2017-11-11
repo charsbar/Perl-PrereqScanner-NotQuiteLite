@@ -36,4 +36,8 @@ test('base + ()', <<'END', {base => 0});
 use base ();
 END
 
+test('base + (bareword)', <<'END', {base => 0, Carp => 0});
+use base (Carp);
+END
+
 done_testing;
