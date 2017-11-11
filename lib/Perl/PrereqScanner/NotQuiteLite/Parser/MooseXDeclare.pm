@@ -52,7 +52,7 @@ sub parse_class_args {
   my $tokens = convert_string_tokens($raw_tokens);
   shift @$tokens; # discard class
 
-  my $class_name = (shift @$tokens || [])->[0];
+  my $class_name = (shift @$tokens || [])->[0] or return;
   if ($class_name eq '::') {
     my $name = (shift @$tokens || [])->[0];
     $class_name = $namespace . '::' . $name;
