@@ -55,7 +55,7 @@ sub _parse_loader_args {
       $prev = $token;
       next;
     }
-    my $desc = $token->[1];
+    my $desc = $token->[1] || '';
     if ($desc eq '{}') {
       my @hash_tokens = @{$token->[0] || []};
       for(my $i = 0, my $len = @hash_tokens; $i < $len; $i++) {
