@@ -22,7 +22,7 @@ class ::Qux extends ::Baz with ::Fnording {
     sub TestPackage::qux { __PACKAGE__ }
 }
 END
-done_testing;exit;
+
 test('manual namespace', <<'END', {'MooseX::Declare' => 0, 'Foo::Z' => 0, 'Foo::A' => 0, 'Foo::B' => 0, 'Foo::C' => 0});
 use MooseX::Declare;
 
