@@ -10,7 +10,7 @@ our $VERSION = '0.50';
 
 our @BUNDLED_PARSERS = qw/
   Aliased Autouse Catalyst ClassLoad Core Inline
-  Mixin ModuleRuntime MojoBase Moose
+  Mixin ModuleRuntime MojoBase Moose MooseXDeclare
   Plack POE Superclass Syntax TestMore TestRequires
   UniversalVersion
 /;
@@ -40,10 +40,7 @@ sub _match_error {
 
 ### Global Variables To Be Sorted Out Later
 
-my %defined_keywords = _keywords();
-
 my %unsupported_packages = map {$_ => 1} qw(
-  MooseX::Declare
   Perl6::Attributes
   Text::RewriteRules
   Regexp::Grammars
@@ -71,19 +68,6 @@ my %expects_fh_list = map {$_ => 1} qw(
 my %expects_fh_or_block_list = (
   %expects_block_list,
   %expects_fh_list,
-);
-
-my %expects_block = map {$_ => 1} qw(
-  else default
-  eval sub do while until continue
-  BEGIN END INIT CHECK
-  if elsif unless given when
-  for foreach while until
-  map grep sort
-);
-
-my %expects_word = map {$_ => 1} qw(
-  use require no sub
 );
 
 my %ends_expr = map {$_ => 1} qw(
@@ -703,6 +687,15 @@ sub _scan {
           next;
         } elsif ($waiting_for_a_block) {
           $waiting_for_a_block = 0;
+          if (@keywords and $c->token_expects_block($keywords[0])) {
+            my $first_token = $keywords[0];
+            $current_scope |= F_EXPR_END;
+            if ($c->token_defines_sub($first_token) and $c->has_callback_for(sub => $first_token)) {
+              $c->run_callback_for(sub => $first_token, \@tokens);
+              $current_scope &= MASK_KEEP_TOKENS;
+              @tokens = ();
+            }
+          }
           next;
         } elsif ($prev_token_type eq 'KEYWORD' and exists $expects_fh_or_block_list{$prev_token}) {
           $token_type = '';
@@ -718,8 +711,13 @@ sub _scan {
       if (@keywords) {
         for(my $i = @keywords; $i > 0; $i--) {
           my $keyword = $keywords[$i - 1];
-          if (exists $expects_block{$keyword}) {
+          if ($c->token_expects_block($keyword)) {
             $stack_owner = $keyword;
+            if (@tokens and $c->token_defines_sub($keyword) and $c->has_callback_for(sub => $keyword)) {
+              $c->run_callback_for(sub => $keyword, \@tokens);
+              $current_scope &= MASK_KEEP_TOKENS;
+              @tokens = ();
+            }
             last;
           }
         }
@@ -748,7 +746,8 @@ sub _scan {
         next;
       }
     } elsif ($c1 eq '(') {
-      if ($waiting_for_a_block and @keywords and $keywords[-1] eq 'sub' and $$rstr =~ m{$g_re_prototype}gc) {
+      my $prototype_re = $c->prototype_re;
+      if ($waiting_for_a_block and @keywords and $c->token_defines_sub($keywords[-1]) and $$rstr =~ m{$prototype_re}gc) {
         ($token, $token_desc, $token_type) = ($1, '(PROTOTYPE)', '');
         next;
       } elsif ($$rstr =~ m{\G\(((?:$re_nonblock_chars)(?<!\$))\)}gc) {
@@ -764,7 +763,7 @@ sub _scan {
         if (@keywords) {
           for (my $i = @keywords; $i > 0; $i--) {
             my $keyword = $keywords[$i - 1];
-            if (exists $expects_block{$keyword}) {
+            if ($c->token_expects_block($keyword)) {
               $stack_owner = $keyword;
               last;
             }
@@ -854,7 +853,7 @@ sub _scan {
         ($token, $token_desc, $token_type) = ('::', '::', '');
         next;
       }
-      if ($waiting_for_a_block and @keywords and $keywords[-1] eq 'sub') {
+      if ($waiting_for_a_block and @keywords and $c->token_defines_sub($keywords[-1])) {
         while($$rstr =~ m{\G(:?[\w\s]+)}gcs) {
           my $startpos = pos($$rstr);
           if (substr($$rstr, $startpos, 1) eq '(') {
@@ -1081,7 +1080,7 @@ sub _scan {
       next;
     }
 
-    if ($prev_token_type ne 'ARROW' and ($prev_token_type ne 'KEYWORD' or !exists $expects_word{$prev_token})) {
+    if ($prev_token_type ne 'ARROW' and ($prev_token_type ne 'KEYWORD' or !$c->token_expects_word($prev_token))) {
       if ($prev_token_type eq 'TERM' or $prev_token_type eq 'VARIABLE') {
         if ($c1 eq 'x') {
           if ($$rstr =~ m{\G(x\b(?!\s*=>))}gc){
@@ -1183,7 +1182,7 @@ sub _scan {
           $current_scope |= F_SENTENCE_END|F_EXPR_END;
           next;
         }
-      } elsif (exists $defined_keywords{$token} and ($prev_token_type ne 'KEYWORD' or !$expects_word{$prev_token}) or ($prev_token eq 'sub' and $token eq 'BEGIN')) {
+      } elsif ($c->token_is_keyword($token) and ($prev_token_type ne 'KEYWORD' or !$c->token_expects_word($prev_token)) or ($prev_token eq 'sub' and $token eq 'BEGIN')) {
         ($token_desc, $token_type) = ('KEYWORD', 'KEYWORD');
         push @keywords, $token unless $token eq 'undef';
       } else {
@@ -1259,10 +1258,10 @@ sub _scan {
           $prepend = $token;
         }
       }
-      if (!($current_scope & F_KEEP_TOKENS) and (exists $c->{callback}{$token} or exists $c->{keyword}{$token}) and $token_type ne 'METHOD') {
+      if (!($current_scope & F_KEEP_TOKENS) and (exists $c->{callback}{$token} or exists $c->{keyword}{$token} or exists $c->{sub}{$token}) and $token_type ne 'METHOD') {
         $current_scope |= F_KEEP_TOKENS;
       }
-      if (exists $expects_block{$token}) {
+      if ($c->token_expects_block($token)) {
         $waiting_for_a_block = 1;
       }
       if ($current_scope & F_EVAL or ($parent_scope & F_EVAL and (!@{$c->{stack}} or $c->{stack}[-1][0] ne '{'))) {
@@ -1345,8 +1344,8 @@ sub _scan {
           pop @keywords;
         }
 
-        if ($stack->[0] eq '{' and @keywords and exists $expects_block{$keywords[0]} and !exists $expects_block_list{$keywords[-1]}) {
-          $current_scope |= F_SENTENCE_END unless @tokens and ($keywords[-1] eq 'sub' or $keywords[-1] eq 'eval');
+        if ($stack->[0] eq '{' and @keywords and $c->token_expects_block($keywords[0]) and !exists $expects_block_list{$keywords[-1]}) {
+          $current_scope |= F_SENTENCE_END unless @tokens and ($c->token_defines_sub($keywords[-1]) or $keywords[-1] eq 'eval');
         }
         $stack = undef;
       }
@@ -2063,263 +2062,6 @@ _debug("NO TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
     return;
   }
 }
-
-sub _keywords {(
-    '__FILE__' => 1,
-    '__LINE__' => 2,
-    '__PACKAGE__' => 3,
-    '__DATA__' => 4,
-    '__END__' => 5,
-    '__SUB__' => 6,
-    AUTOLOAD => 7,
-    BEGIN => 8,
-    UNITCHECK => 9,
-    DESTROY => 10,
-    END => 11,
-    INIT => 12,
-    CHECK => 13,
-    abs => 14,
-    accept => 15,
-    alarm => 16,
-    and => 17,
-    atan2 => 18,
-    bind => 19,
-    binmode => 20,
-    bless => 21,
-    break => 22,
-    caller => 23,
-    chdir => 24,
-    chmod => 25,
-    chomp => 26,
-    chop => 27,
-    chown => 28,
-    chr => 29,
-    chroot => 30,
-    close => 31,
-    closedir => 32,
-    cmp => 33,
-    connect => 34,
-    continue => 35,
-    cos => 36,
-    crypt => 37,
-    dbmclose => 38,
-    dbmopen => 39,
-    default => 40,
-    defined => 41,
-    delete => 42,
-    die => 43,
-    do => 44,
-    dump => 45,
-    each => 46,
-    else => 47,
-    elsif => 48,
-    endgrent => 49,
-    endhostent => 50,
-    endnetent => 51,
-    endprotoent => 52,
-    endpwent => 53,
-    endservent => 54,
-    eof => 55,
-    eq => 56,
-    eval => 57,
-    evalbytes => 58,
-    exec => 59,
-    exists => 60,
-    exit => 61,
-    exp => 62,
-    fc => 63,
-    fcntl => 64,
-    fileno => 65,
-    flock => 66,
-    for => 67,
-    foreach => 68,
-    fork => 69,
-    format => 70,
-    formline => 71,
-    ge => 72,
-    getc => 73,
-    getgrent => 74,
-    getgrgid => 75,
-    getgrnam => 76,
-    gethostbyaddr => 77,
-    gethostbyname => 78,
-    gethostent => 79,
-    getlogin => 80,
-    getnetbyaddr => 81,
-    getnetbyname => 82,
-    getnetent => 83,
-    getpeername => 84,
-    getpgrp => 85,
-    getppid => 86,
-    getpriority => 87,
-    getprotobyname => 88,
-    getprotobynumber => 89,
-    getprotoent => 90,
-    getpwent => 91,
-    getpwnam => 92,
-    getpwuid => 93,
-    getservbyname => 94,
-    getservbyport => 95,
-    getservent => 96,
-    getsockname => 97,
-    getsockopt => 98,
-    given => 99,
-    glob => 100,
-    gmtime => 101,
-    goto => 102,
-    grep => 103,
-    gt => 104,
-    hex => 105,
-    if => 106,
-    index => 107,
-    int => 108,
-    ioctl => 109,
-    join => 110,
-    keys => 111,
-    kill => 112,
-    last => 113,
-    lc => 114,
-    lcfirst => 115,
-    le => 116,
-    length => 117,
-    link => 118,
-    listen => 119,
-    local => 120,
-    localtime => 121,
-    lock => 122,
-    log => 123,
-    lstat => 124,
-    lt => 125,
-    m => 126,
-    map => 127,
-    mkdir => 128,
-    msgctl => 129,
-    msgget => 130,
-    msgrcv => 131,
-    msgsnd => 132,
-    my => 133,
-    ne => 134,
-    next => 135,
-    no => 136,
-    not => 137,
-    oct => 138,
-    open => 139,
-    opendir => 140,
-    or => 141,
-    ord => 142,
-    our => 143,
-    pack => 144,
-    package => 145,
-    pipe => 146,
-    pop => 147,
-    pos => 148,
-    print => 149,
-    printf => 150,
-    prototype => 151,
-    push => 152,
-    q => 153,
-    qq => 154,
-    qr => 155,
-    quotemeta => 156,
-    qw => 157,
-    qx => 158,
-    rand => 159,
-    read => 160,
-    readdir => 161,
-    readline => 162,
-    readlink => 163,
-    readpipe => 164,
-    recv => 165,
-    redo => 166,
-    ref => 167,
-    rename => 168,
-    require => 169,
-    reset => 170,
-    return => 171,
-    reverse => 172,
-    rewinddir => 173,
-    rindex => 174,
-    rmdir => 175,
-    s => 176,
-    say => 177,
-    scalar => 178,
-    seek => 179,
-    seekdir => 180,
-    select => 181,
-    semctl => 182,
-    semget => 183,
-    semop => 184,
-    send => 185,
-    setgrent => 186,
-    sethostent => 187,
-    setnetent => 188,
-    setpgrp => 189,
-    setpriority => 190,
-    setprotoent => 191,
-    setpwent => 192,
-    setservent => 193,
-    setsockopt => 194,
-    shift => 195,
-    shmctl => 196,
-    shmget => 197,
-    shmread => 198,
-    shmwrite => 199,
-    shutdown => 200,
-    sin => 201,
-    sleep => 202,
-    socket => 203,
-    socketpair => 204,
-    sort => 205,
-    splice => 206,
-    split => 207,
-    sprintf => 208,
-    sqrt => 209,
-    srand => 210,
-    stat => 211,
-    state => 212,
-    study => 213,
-    sub => 214,
-    substr => 215,
-    symlink => 216,
-    syscall => 217,
-    sysopen => 218,
-    sysread => 219,
-    sysseek => 220,
-    system => 221,
-    syswrite => 222,
-    tell => 223,
-    telldir => 224,
-    tie => 225,
-    tied => 226,
-    time => 227,
-    times => 228,
-    tr => 229,
-    truncate => 230,
-    uc => 231,
-    ucfirst => 232,
-    umask => 233,
-    undef => 234,
-    unless => 235,
-    unlink => 236,
-    unpack => 237,
-    unshift => 238,
-    untie => 239,
-    until => 240,
-    use => 241,
-    utime => 242,
-    values => 243,
-    vec => 244,
-    wait => 245,
-    waitpid => 246,
-    wantarray => 247,
-    warn => 248,
-    when => 249,
-    while => 250,
-    write => 251,
-    x => 252,
-    xor => 253,
-    y => 254 || 255,
-)}
 
 1;
 
