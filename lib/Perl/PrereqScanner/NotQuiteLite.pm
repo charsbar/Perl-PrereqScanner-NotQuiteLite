@@ -180,6 +180,17 @@ sub new {
         ];
       }
     }
+    if ($parser->can('register_fqfn')) {
+      my $fqfn_mapping = $parser->register_fqfn;
+      for my $name (keys %$fqfn_mapping) {
+        my ($module) = $name =~ /^(.+)::/;
+        $mapping{keyword}{$name} = [
+          $parser,
+          $fqfn_mapping->{$name},
+          $module,
+        ];
+      }
+    }
   }
   $args{_} = \%mapping;
 

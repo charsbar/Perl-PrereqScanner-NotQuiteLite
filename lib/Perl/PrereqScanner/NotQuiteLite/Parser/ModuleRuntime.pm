@@ -4,10 +4,19 @@ use strict;
 use warnings;
 use Perl::PrereqScanner::NotQuiteLite::Util;
 
+my %known_functions = map {$_ => 1} qw/
+  require_module use_module use_package_optimistically
+/;
+
 sub register { return {
   use => {
     'Module::Runtime' => 'parse_module_runtime_args',
   },
+}}
+
+sub register_fqfn { return {
+  map { "Module::Runtime::".$_ => "parse_".$_."_args" }
+  keys %known_functions
 }}
 
 sub parse_module_runtime_args {
@@ -18,9 +27,6 @@ sub parse_module_runtime_args {
     $c->add($used_module => shift @$tokens);
   }
 
-  my %known_functions = map {$_ => 1} qw/
-    require_module use_module use_package_optimistically
-  /;
   for my $token (@$tokens) {
     next if ref $token;
 
@@ -30,12 +36,6 @@ sub parse_module_runtime_args {
         [$class, 'parse_'.$token.'_args', $used_module],
       );
     }
-  }
-  for my $func (keys %known_functions) {
-    $c->register_keyword_parser(
-      "Module::Runtime::$func",
-      [$class, 'parse_'.$func.'_args', $used_module],
-    );
   }
 }
 

@@ -4,10 +4,20 @@ use strict;
 use warnings;
 use Perl::PrereqScanner::NotQuiteLite::Util;
 
+my %known_functions = map {$_ => 1} qw/
+  load_class try_load_class load_optional_class
+  load_first_existing_class
+/;
+
 sub register { return {
   use => {
     'Class::Load' => 'parse_class_load_args',
   },
+}}
+
+sub register_fqfn { return {
+  map { "Class::Load::".$_ => "parse_".$_."_args" }
+  keys %known_functions
 }}
 
 sub parse_class_load_args {
@@ -18,10 +28,6 @@ sub parse_class_load_args {
     $c->add($used_module => shift @$tokens);
   }
 
-  my %known_functions = map {$_ => 1} qw/
-    load_class try_load_class load_optional_class
-    load_first_existing_class
-  /;
   for my $token (@$tokens) {
     next if ref $token;
 
@@ -38,12 +44,6 @@ sub parse_class_load_args {
         );
       }
     }
-  }
-  for my $func (keys %known_functions) {
-    $c->register_keyword_parser(
-      "Class::Load::$func",
-      [$class, 'parse_'.$func.'_args', $used_module],
-    );
   }
 }
 
