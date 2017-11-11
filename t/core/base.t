@@ -32,4 +32,8 @@ sub function {}
 use base function();
 END
 
+test('base + ()', <<'END', {base => 0});
+use base ();
+END
+
 done_testing;

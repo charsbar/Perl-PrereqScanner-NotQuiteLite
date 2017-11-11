@@ -45,7 +45,7 @@ sub parse_base_args {
   }
   while(my $token = shift @$tokens) {
     my $module = $token;
-    if (ref $module and $module->[1] eq 'WORD') {
+    if (ref $module and ($module->[1] || '') eq 'WORD') {
       # allow bareword, but disallow function()
       $module = $module->[0];
       next if @$tokens and ref $tokens->[0] and ($tokens->[0][1] || '') eq '()';
