@@ -66,6 +66,7 @@ test(<<'TEST'); # ROSSI/LaTeX-Authors-0.81/Authors.pm
         }
 
     }
+    }
 TEST
 
 test(<<'TEST'); # MICB/wing-0.9/Wing.pm
