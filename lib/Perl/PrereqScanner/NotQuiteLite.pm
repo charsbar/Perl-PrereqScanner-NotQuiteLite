@@ -1194,7 +1194,7 @@ sub _scan {
       } elsif ($token eq 'CORE') {
         ($token_desc, $token_type) = ('NAMESPACE', 'WORD');
       } elsif ($token eq 'format') {
-        if ($$rstr =~ m{\G(.*?\n.*?\n\.\n)}gcs) {
+        if ($$rstr =~ m{\G([^=]*?=[ \t]*\n.*?\n\.\n)}gcs) {
           $token .= $1;
           ($token_desc, $token_type) = ('FORMAT', '');
           $current_scope |= F_SENTENCE_END|F_EXPR_END;
