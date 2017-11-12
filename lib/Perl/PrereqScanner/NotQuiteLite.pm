@@ -103,7 +103,7 @@ my $re_pod = qr/(
   (?:(?:\n)
   =cut\b.*?(?:\n|\z)|\z)
 )/sx;
-my $re_comment = qr/(?:\s*#.*?\n)+/s;
+my $re_comment = qr/(?:\s*#[^\n]*?\n)*(?:\s*#[^\n]*?)(?:\n|$)/s;
 
 my $g_re_scalar_variable = qr{\G(\$(?:$re_variable))};
 my $g_re_hash_shortcut = qr{\G(\{\s*(?:\w+|(['"])[\w\s]+\2|(?:$re_nonblock_chars))\s*(?<!\$)\})};
