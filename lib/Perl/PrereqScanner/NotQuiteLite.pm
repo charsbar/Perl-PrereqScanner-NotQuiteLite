@@ -1193,7 +1193,7 @@ sub _scan {
           $current_scope |= F_SENTENCE_END|F_EXPR_END;
           next;
         }
-      } elsif ($c->token_is_keyword($token) and ($prev_token_type ne 'KEYWORD' or !$c->token_expects_word($prev_token)) or ($prev_token eq 'sub' and $token eq 'BEGIN')) {
+      } elsif ($c->token_is_keyword($token) and ($prev_token_type ne 'KEYWORD' or !$c->token_expects_word($prev_token) or ($prev_token eq 'sub' and $token eq 'BEGIN'))) {
         ($token_desc, $token_type) = ('KEYWORD', 'KEYWORD');
         push @keywords, $token unless $token eq 'undef';
       } else {
