@@ -194,4 +194,10 @@ test(<<'TEST'); # MIK/CryptX-0.028/lib/Crypt/PRNG.pm
 }
 TEST
 
+test(<<'END'); # MIKER/Net-DNS-Dig-0.12/Dig.pm
+sub for($$$) {
+  ...
+}
+END
+
 done_testing;
