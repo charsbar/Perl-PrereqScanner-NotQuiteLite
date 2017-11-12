@@ -279,6 +279,12 @@ sub scan_string {
       redo;
     }
   }
+
+  if (@{$c->{stack}}) {
+    require Data::Dump;
+    push @{$c->{errors}}, Data::Dump::dump($c->{stack});
+  }
+
   $c;
 }
 
