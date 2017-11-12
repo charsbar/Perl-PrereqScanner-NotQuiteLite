@@ -275,6 +275,7 @@ sub scan_string {
     if ($c->{redo}) {
       delete $c->{redo};
       delete $c->{ended};
+      @{$c->{stack}} = ();
       redo;
     }
   }
