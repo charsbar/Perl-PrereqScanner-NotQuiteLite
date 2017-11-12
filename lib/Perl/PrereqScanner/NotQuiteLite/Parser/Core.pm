@@ -67,16 +67,22 @@ sub parse_parent_args {
   if (is_version($tokens->[0])) {
     $c->add($used_module => shift @$tokens);
   }
-  my $prev;
-  for my $token (@$tokens) {
+  while(my $token = shift @$tokens) {
     last if $token eq '-norequire';
+    my $module = $token;
     if (ref $token) {
       last if $token->[0] eq '-norequire';
-      $prev = $token->[0];
-      next;
     }
-    $prev = $token;
-    $c->add($token => 0) if is_module_name($token);
+    if (ref $module and ($module->[1] || '') eq 'WORD') {
+      # allow bareword, but disallow function()
+      $module = $module->[0];
+      next if @$tokens and ref $tokens->[0] and ($tokens->[0][1] || '') eq '()';
+    }
+    # bareword in parentheses
+    if (ref $module and ref $module->[0]) {
+      $module = $module->[0][0];
+    }
+    $c->add($module => 0) if is_module_name($module);
   }
 }
 
