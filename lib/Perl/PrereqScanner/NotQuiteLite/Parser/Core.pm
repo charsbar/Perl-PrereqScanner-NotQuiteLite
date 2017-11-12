@@ -21,7 +21,7 @@ sub parse_if_args {
 
   my $tokens = convert_string_tokens($raw_tokens);
   my $module = shift @$tokens;
-  if (ref $module and $module->[1] eq 'WORD') {
+  if (ref $module and ($module->[1] eq 'WORD' or $module->[1] eq 'KEYWORD')) {
     $module = $module->[0];
   }
   if (is_module_name($module)) {
