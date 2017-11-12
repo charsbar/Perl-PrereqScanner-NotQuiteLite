@@ -335,7 +335,7 @@ sub _scan {
       next;
     } elsif ($c1 eq '_') {
       my $c2 = substr($$rstr, $pos + 1, 1);
-      if ($c2 eq '_' and $$rstr =~ m/\G(__(?:DATA|END)__\b)/gc) {
+      if ($c2 eq '_' and $$rstr =~ m/\G(__(?:DATA|END)__\b)(?!\s*=>)/gc) {
         if ($wants_doc) {
           ($token, $token_desc, $token_type) = ($1, 'END_OF_CODE', '');
           next;
