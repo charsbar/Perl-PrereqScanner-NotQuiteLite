@@ -47,6 +47,11 @@ my %unsupported_packages = map {$_ => 1} qw(
   tt
 );
 
+my %sub_keywords = (
+  'Function::Parameters' => [qw/fun method/],
+  'TryCatch' => [qw/try catch/],
+);
+
 my %is_conditional = map {$_ => 1} qw(
   if elsif unless else given when
   for foreach while until
@@ -1979,6 +1984,10 @@ _debug("USE TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
       shift @$tokens;
     } else {
       $c->add($name => 0);
+    }
+
+    if (exists $sub_keywords{$name}) {
+      $c->register_sub_keywords(@{$sub_keywords{$name}});
     }
   }
 
