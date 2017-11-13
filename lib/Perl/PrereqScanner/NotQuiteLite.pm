@@ -1993,6 +1993,7 @@ _debug("USE TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
 
     if (exists $sub_keywords{$name}) {
       $c->register_sub_keywords(@{$sub_keywords{$name}});
+      $c->prototype_re(qr{\G(\((?:[^\\\(\)]*(?:\\.[^\\\(\)]*)*)\))});
     }
   }
 
