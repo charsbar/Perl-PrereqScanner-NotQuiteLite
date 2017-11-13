@@ -905,6 +905,7 @@ sub _scan {
           }
         }
         ($token, $token_desc, $token_type) = (substr($$rstr, $pos, pos($$rstr) - $pos), 'ATTRIBUTE', '');
+        pos($$rstr) = $pos + 1;
         next;
       } else {
         pos($$rstr) = $pos + 1;
