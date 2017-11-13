@@ -313,6 +313,7 @@ sub _scan {
   my $caller_package;
   my $prepend;
   my ($pos, $c1);
+  my $prev_pos = 0;
   while(defined($pos = pos($$rstr))) {
     $token = undef;
 
@@ -1259,6 +1260,9 @@ sub _scan {
 
     last;
   } continue {
+    die "Aborted at $prev_pos" if $prev_pos == pos($$rstr);
+    $prev_pos = pos($$rstr);
+
     if (defined $token) {
       if (!($current_scope & F_EXPR)) {
         _debug('BEGIN EXPR') if !!DEBUG;
