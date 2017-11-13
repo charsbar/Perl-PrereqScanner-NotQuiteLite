@@ -43,7 +43,6 @@ sub _match_error {
 my %unsupported_packages = map {$_ => 1} qw(
   Perl6::Attributes
   Text::RewriteRules
-  Regexp::Grammars
   tt
 );
 
