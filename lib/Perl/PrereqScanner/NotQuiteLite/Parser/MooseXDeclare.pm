@@ -41,7 +41,7 @@ sub parse_moosex_declare_args {
     before after around override augment
   /);
 
-  $c->prototype_re(qr{\G\((?:[^\\\(\)]*(?:\\.[^\\\(\)]*)*)\)});
+  $c->prototype_re(qr{\G(\((?:[^\\\(\)]*(?:\\.[^\\\(\)]*)*)\))});
 }
 
 sub parse_class_args {
