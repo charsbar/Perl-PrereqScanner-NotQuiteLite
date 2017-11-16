@@ -1285,7 +1285,7 @@ sub _scan {
           $prepend = $token;
         }
       }
-      if (!($current_scope & F_KEEP_TOKENS) and (exists $c->{callback}{$token} or exists $c->{keyword}{$token} or exists $c->{sub}{$token}) and $token_type ne 'METHOD') {
+      if (!($current_scope & F_KEEP_TOKENS) and (exists $c->{callback}{$token} or exists $c->{keyword}{$token} or exists $c->{sub}{$token}) and $token_type ne 'METHOD' and !$c->token_expects_word($prev_token)) {
         $current_scope |= F_KEEP_TOKENS;
       }
       if ($c->token_expects_block($token)) {

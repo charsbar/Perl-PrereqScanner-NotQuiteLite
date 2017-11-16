@@ -44,4 +44,15 @@ test('require Module in sub', <<'END', {'Test::More' => 0});
 sub BEGIN { require Test::More; }
 END
 
+test('sub require', <<'END', {'vars' => 0}); # EVO/Term-ShellKit-1.002/ShellKit/Dev.pm
+sub require {
+  die "No module name provided" unless ( scalar @_ );
+  map { Term::ShellKit::require_package( $_ ) } @_;
+}
+
+######################################################################
+
+use vars '%LibLastLoaded';
+END
+
 done_testing;
