@@ -223,6 +223,11 @@ sub scan_string {
 
   my $c = Perl::PrereqScanner::NotQuiteLite::Context->new(%$self);
 
+  if ($self->{quick}) {
+    $c->{file_size} = length $string;
+    $self->_skim_string($c, \$string) if $c->{file_size} > 30_000;
+  }
+
   # UTF8 BOM
   if ($string =~ s/\A(\xef\xbb\xbf)//s) {
     utf8::decode($string);
@@ -272,6 +277,23 @@ sub scan_string {
   }
 
   $c;
+}
+
+sub _skim_string {
+  my ($self, $c, $rstr) = @_;
+  my $pos = pos($$rstr) || 0;
+  my $last_found = 0;
+  my $saw_moose;
+  my $re = qr/\G.*?\b((?:use|require|no)\s+(?:[A-Za-z][A-Za-z0-9_]*::)*[A-Za-z][A-Za-z0-9_]*)/;
+  while(my ($match) = $$rstr =~ /$re/gc) {
+    $last_found = pos($$rstr) + length $match;
+    if (!$saw_moose and $match =~ /^use\s+(?:Mo(?:o|(?:[ou]se))?X?|MooseX::Declare)\b/) {
+      $re = qr/\G.*?\b((?:(?:use|require|no)\s+(?:[A-Za-z][A-Za-z0-9_]*::)*[A-Za-z][A-Za-z0-9_]*)|(?:(?:extends|with)\s+(?:["']|q[a-z]*[^a-zA-Z0-9_])(?:[A-Za-z][A-Za-z0-9_]*::)*[A-Za-z][A-Za-z0-9_]*))/;
+      $saw_moose = 1;
+    }
+  }
+  $c->{last_found_by_skimming} = $last_found;
+  pos($$rstr) = $pos;
 }
 
 sub _scan {
@@ -1443,6 +1465,7 @@ sub _scan {
 
       last if $current_scope & F_SCOPE_END;
       last if $c->{ended};
+      last if $c->{last_found_by_skimming} and $c->{last_found_by_skimming} < pos($$rstr);
 
       ($prev_token, $prev_token_type) = ($token, $token_type);
     }
