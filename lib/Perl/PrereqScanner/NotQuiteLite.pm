@@ -56,24 +56,6 @@ my %is_conditional = map {$_ => 1} qw(
   for foreach while until
 );
 
-my %expects_expr_block = map {$_ => 1} qw(
-  if elsif unless given when
-  for foreach while until
-);
-
-my %expects_block_list = map {$_ => 1} qw(
-  map grep sort
-);
-
-my %expects_fh_list = map {$_ => 1} qw(
-  print printf say
-);
-
-my %expects_fh_or_block_list = (
-  %expects_block_list,
-  %expects_fh_list,
-);
-
 my %ends_expr = map {$_ => 1} qw(
   and or xor
   if else elsif unless when default
@@ -400,7 +382,7 @@ sub _scan {
       } elsif ($c2 eq '{') {
         if ($$rstr =~ m{\G(\$\{[\w\s]+\})}gc) {
           ($token, $token_desc, $token_type) = ($1, '${NAME}', 'VARIABLE');
-          if ($prev_token_type eq 'KEYWORD' and $expects_fh_or_block_list{$prev_token}) {
+          if ($prev_token_type eq 'KEYWORD' and $c->token_expects_fh_or_block_list($prev_token)) {
             $token_type = '';
             next;
           }
@@ -518,7 +500,7 @@ sub _scan {
       if ($c2 eq '{') {
         if ($$rstr =~ m{\G(\*\{[\w\s]+\})}gc) {
           ($token, $token_desc, $token_type) = ($1, '*{NAME}', 'VARIABLE');
-          if ($prev_token eq 'KEYWORD' and $expects_fh_or_block_list{$prev_token}) {
+          if ($prev_token eq 'KEYWORD' and $c->token_expects_fh_or_block_list($prev_token)) {
             $token_type = '';
             next;
           }
@@ -720,7 +702,7 @@ sub _scan {
             }
           }
           next;
-        } elsif ($prev_token_type eq 'KEYWORD' and exists $expects_fh_or_block_list{$prev_token}) {
+        } elsif ($prev_token_type eq 'KEYWORD' and $c->token_expects_fh_or_block_list($prev_token)) {
           $token_type = '';
           next;
         } else {
@@ -775,7 +757,7 @@ sub _scan {
         next;
       } elsif ($$rstr =~ m{\G\(((?:$re_nonblock_chars)(?<!\$))\)}gc) {
         ($token, $token_desc, $token_type) = ([[[$1, 'TERM']]], '()', 'TERM');
-        if ($prev_token_type eq 'KEYWORD' and @keywords and $keywords[-1] eq $prev_token and !exists $expects_expr_block{$prev_token}) {
+        if ($prev_token_type eq 'KEYWORD' and @keywords and $keywords[-1] eq $prev_token and !$c->token_expects_expr_block($prev_token)) {
           pop @keywords;
         }
         next;
@@ -1367,11 +1349,11 @@ sub _scan {
           push @scope_tokens, [$scanned_tokens, "$start->[0]$end->[0]"];
         }
 
-        if ($stack->[0] eq '(' and $prev_token_type eq 'KEYWORD' and @keywords and $keywords[-1] eq $prev_token and !exists $expects_expr_block{$prev_token}) {
+        if ($stack->[0] eq '(' and $prev_token_type eq 'KEYWORD' and @keywords and $keywords[-1] eq $prev_token and !$c->token_expects_expr_block($prev_token)) {
           pop @keywords;
         }
 
-        if ($stack->[0] eq '{' and @keywords and $c->token_expects_block($keywords[0]) and !exists $expects_block_list{$keywords[-1]}) {
+        if ($stack->[0] eq '{' and @keywords and $c->token_expects_block($keywords[0]) and !$c->token_expects_block_list($keywords[-1])) {
           $current_scope |= F_SENTENCE_END unless @tokens and ($c->token_defines_sub($keywords[-1]) or $keywords[-1] eq 'eval');
         }
         $stack = undef;

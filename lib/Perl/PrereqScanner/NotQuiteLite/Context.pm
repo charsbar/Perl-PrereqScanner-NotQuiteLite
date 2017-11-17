@@ -8,6 +8,24 @@ use Perl::PrereqScanner::NotQuiteLite::Util;
 
 my %defined_keywords = _keywords();
 
+my %default_expects_expr_block = map {$_ => 1} qw(
+  if elsif unless given when
+  for foreach while until
+);
+
+my %default_expects_block_list = map {$_ => 1} qw(
+  map grep sort
+);
+
+my %default_expects_fh_list = map {$_ => 1} qw(
+  print printf say
+);
+
+my %default_expects_fh_or_block_list = (
+  %default_expects_block_list,
+  %default_expects_fh_list,
+);
+
 my %default_expects_block = map {$_ => 1} qw(
   else default
   eval sub do while until continue
@@ -233,6 +251,38 @@ sub register_quotelike_keywords {
   my $trie = Regexp::Trie->new;
   $trie->add($_) for 'q', 'qq', @{$self->{quotelike} || []};
   $self->{quotelike_re} = $trie->regexp;
+}
+
+sub token_expects_block_list {
+  my ($self, $token) = @_;
+  return 1 if exists $default_expects_block_list{$token};
+  return 0 if !exists $self->{expects_block_list};
+  return 1 if exists $self->{expects_block_list}{$token};
+  return 0;
+}
+
+sub token_expects_fh_list {
+  my ($self, $token) = @_;
+  return 1 if exists $default_expects_fh_list{$token};
+  return 0 if !exists $self->{expects_fh_list};
+  return 1 if exists $self->{expects_fh_list}{$token};
+  return 0;
+}
+
+sub token_expects_fh_or_block_list {
+  my ($self, $token) = @_;
+  return 1 if exists $default_expects_fh_or_block_list{$token};
+  return 0 if !exists $self->{expects_fh_or_block_list};
+  return 1 if exists $self->{expects_fh_or_block_list}{$token};
+  return 0;
+}
+
+sub token_expects_expr_block {
+  my ($self, $token) = @_;
+  return 1 if exists $default_expects_expr_block{$token};
+  return 0 if !exists $self->{expects_expr_block};
+  return 1 if exists $self->{expects_expr_block}{$token};
+  return 0;
 }
 
 sub token_expects_block {
