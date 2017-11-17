@@ -1413,6 +1413,13 @@ sub _scan {
             $c->{current_scope} = \$current_scope;
             $c->{cond} = $cond;
             $c->{callback}{$first_token}->($c, $rstr, \@tokens);
+
+            if ($c->{found_unsupported_package} and !$c->{quick}) {
+              my $unsupported = $c->{found_unsupported_package};
+              $c->{quick} = 1;
+              $self->_skim_string($c, $rstr);
+              warn "Unsupported package '$unsupported' is found. Result may be incorrect.\n";
+            }
           }
           if (exists $c->{keyword}{$first_token}) {
             $c->{current_scope} = \$current_scope;
@@ -2010,7 +2017,7 @@ _debug("USE TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
   }
 
   if (exists $unsupported_packages{$name}) {
-    $c->{ended} = 1;
+    $c->{found_unsupported_package} = $name;
   }
 }
 
