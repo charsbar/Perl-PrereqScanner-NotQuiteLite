@@ -66,4 +66,68 @@ do not use print for output but some Vip error or login func
 =cut
 END
 
+test('overload', <<'END', {overload => 0}); # TRIZEN/Math-BigNum-0.20/lib/Math/BigNum/Nan.pm
+use overload
+  q{""} => \&stringify,
+  q{0+} => \&numify,
+  bool  => \&boolify,
+
+  '=' => \&copy,
+
+  # Some shortcuts for speed
+  '+='  => \&_self,
+  '-='  => \&_self,
+  '*='  => \&_self,
+  '/='  => \&_self,
+  '%='  => \&_self,
+  '^='  => \&_self,
+  '&='  => \&_self,
+  '|='  => \&_self,
+  '**=' => \&_self,
+  '<<=' => \&_self,
+  '>>=' => \&_self,
+
+  '+'  => \&nan,
+  '*'  => \&nan,
+  '&'  => \&nan,
+  '|'  => \&nan,
+  '^'  => \&nan,
+  '~'  => \&nan,
+  '>>' => \&nan,
+  '<<' => \&nan,
+
+  '++' => \&_self,
+  '--' => \&_self,
+
+  eq  => sub { "$_[0]" eq "$_[1]" },
+  ne  => sub { "$_[0]" ne "$_[1]" },
+  cmp => sub {
+    $_[2]
+      ? "$_[1]" cmp $_[0]->stringify
+      : $_[0]->stringify cmp "$_[1]";
+  },
+
+  '!='  => sub { 1 },
+  '=='  => sub { 0 },
+  '>'   => sub { 0 },
+  '>='  => sub { 0 },
+  '<'   => sub { 0 },
+  '<='  => sub { 0 },
+  '<=>' => sub { 0 },
+
+  '**'  => \&nan,
+  '-'   => \&nan,
+  '/'   => \&nan,
+  '%'   => \&nan,
+  atan2 => \&nan,
+
+  sin  => \&nan,
+  cos  => \&nan,
+  exp  => \&nan,
+  log  => \&nan,
+  int  => \&nan,
+  abs  => \&nan,
+  sqrt => \&nan;
+END
+
 done_testing;

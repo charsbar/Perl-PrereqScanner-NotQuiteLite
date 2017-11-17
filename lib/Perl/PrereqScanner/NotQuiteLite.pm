@@ -1267,7 +1267,7 @@ sub _scan {
       if (!($current_scope & F_EXPR)) {
         _debug('BEGIN EXPR') if !!DEBUG;
         $current_scope |= F_EXPR;
-      } elsif (($current_scope & F_EXPR) and (($current_scope & F_EXPR_END) or ($ends_expr{$token} and $token_type eq 'KEYWORD'))) {
+      } elsif (($current_scope & F_EXPR) and (($current_scope & F_EXPR_END) or ($ends_expr{$token} and $token_type eq 'KEYWORD' and $prev_token ne ',' and $prev_token ne '=>'))) {
         @keywords = ();
         _debug('END EXPR') if !!DEBUG;
         $current_scope &= MASK_EXPR_END;
