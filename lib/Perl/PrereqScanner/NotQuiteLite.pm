@@ -271,7 +271,7 @@ sub scan_string {
     }
   }
 
-  if (@{$c->{stack}}) {
+  if (@{$c->{stack}} and !$c->{quick}) {
     require Data::Dump;
     push @{$c->{errors}}, Data::Dump::dump($c->{stack});
   }
