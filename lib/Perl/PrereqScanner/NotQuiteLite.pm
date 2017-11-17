@@ -171,7 +171,7 @@ sub new {
   for my $parser (@parsers) {
     if (!exists $LOADED{$parser}) {
       eval "require $parser; 1" or die "Parser Error: $@";
-      $LOADED{$parser} = $parser->can('register') ? $parser->register : undef;
+      $LOADED{$parser} = $parser->can('register') ? $parser->register(%args) : undef;
     }
     my $parser_mapping = $LOADED{$parser} or next;
     for my $type (qw/use no keyword method/) {
