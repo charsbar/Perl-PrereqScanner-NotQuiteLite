@@ -40,4 +40,9 @@ test('parent + (bareword)', <<'END', {parent => 0, Carp => 0});
 use parent (Carp);
 END
 
+# incompatible with Perl::PrereqScanner, which counts Test::More as well
+test('-norequire', <<'END', {parent => 0});
+use parent -norequire, 'Test::More';
+END
+
 done_testing;
