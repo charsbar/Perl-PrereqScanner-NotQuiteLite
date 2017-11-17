@@ -35,11 +35,6 @@ sub new {
   my %context = (
     requires => CPAN::Meta::Requirements->new,
     file => $args{file},
-    quotelike => [qw/q qq/],
-    expects_block => {},
-    expects_word => {},
-    defines_sub => {sub => 1},
-    prototype_re => $default_g_re_prototype,
     stash => {},
   );
 
@@ -220,31 +215,30 @@ sub prototype_re {
   if (@_) {
     $self->{prototype_re} = shift;
   }
+  return $default_g_re_prototype unless exists $self->{prototype_re};
   $self->{prototype_re};
 }
 
 sub quotelike_re {
   my $self = shift;
-  $self->{quotelike_re} ||= $self->_quotelike_re;
-}
-
-sub _quotelike_re {
-  my $self = shift;
-  my $trie = Regexp::Trie->new;
-  $trie->add($_) for @{$self->{quotelike} || []};
-  $self->{quotelike_re} = $trie->regexp;
+  return qr/qq?/ unless exists $self->{quotelike_re};
+  $self->{quotelike_re};
 }
 
 sub register_quotelike_keywords {
   my ($self, @keywords) = @_;
   push @{$self->{quotelike}}, @keywords;
   $self->{defined_keywords}{$_} = 0 for @keywords;
-  $self->_quotelike_re;
+
+  my $trie = Regexp::Trie->new;
+  $trie->add($_) for 'q', 'qq', @{$self->{quotelike} || []};
+  $self->{quotelike_re} = $trie->regexp;
 }
 
 sub token_expects_block {
   my ($self, $token) = @_;
   return 1 if exists $default_expects_block{$token};
+  return 0 if !exists $self->{expects_block};
   return 1 if exists $self->{expects_block}{$token};
   return 0;
 }
@@ -252,6 +246,7 @@ sub token_expects_block {
 sub token_expects_word {
   my ($self, $token) = @_;
   return 1 if exists $default_expects_word{$token};
+  return 0 if !exists $self->{expects_word};
   return 1 if exists $self->{expects_word}{$token};
   return 0;
 }
@@ -259,6 +254,7 @@ sub token_expects_word {
 sub token_is_keyword {
   my ($self, $token) = @_;
   return 1 if exists $defined_keywords{$token};
+  return 0 if !exists $self->{defined_keywords};
   return 1 if exists $self->{defined_keywords}{$token};
   return 0;
 }
@@ -275,7 +271,10 @@ sub register_sub_keywords {
 
 sub token_defines_sub {
   my ($self, $token) = @_;
-  exists $self->{defines_sub}{$token} ? 1 : 0;
+  return 1 if $token eq 'sub';
+  return 0 if !exists $self->{defines_sub};
+  return 1 if exists $self->{defines_sub}{$token};
+  return 0;
 }
 
 sub enables_utf8 {
