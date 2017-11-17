@@ -1999,6 +1999,9 @@ _debug("USE TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
   if ($c->has_callback_for(use => $name)) {
     eval { $c->run_callback_for(use => $name, $tokens) };
     warn "Callback Error: $@" if $@;
+  } elsif ($name =~ /\b(?:Mo[ou]se?X?|MooX?|Elk|Antlers|Role)\b/) {
+    eval { $c->run_callback_for(use => ($name =~ /Role/ ? 'Moose::Role' : 'Moose'), $tokens) };
+    warn "Callback Error: $@" if $@;
   }
 
   if (exists $unsupported_packages{$name}) {
