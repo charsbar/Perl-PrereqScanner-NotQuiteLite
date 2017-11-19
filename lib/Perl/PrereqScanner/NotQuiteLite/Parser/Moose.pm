@@ -9,7 +9,7 @@ use Perl::PrereqScanner::NotQuiteLite::Util;
 # Like Moose; modules that are not listed here but have Moose
 # in their name are implicitly treated like these as well
 my @ExportsExtendsAndWith = qw/
-  Moose Moo Mouse MooX Moo::Lax
+  Moose Moo Mouse MooX Moo::Lax Moos
   MooseX::App MooseX::Singleton MooseX::SingletonMethod
 
   HTML::FormHandler::Moose Test::Class::Moose
