@@ -1332,6 +1332,8 @@ sub _scan {
             }
           }
           $current_scope &= MASK_EVAL;
+        } elsif ($token_type eq 'VARIABLE') {
+          $current_scope &= MASK_EVAL;
         }
         $c->{eval} = ($current_scope | $parent_scope) & F_EVAL ? 1 : 0;
       }
