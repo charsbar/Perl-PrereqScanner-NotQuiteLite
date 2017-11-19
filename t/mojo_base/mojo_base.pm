@@ -13,4 +13,12 @@ test('Mojo::Base itself', <<'END', {'Mojo::Base' => 0});
 use Mojo::Base 'Mojo::Base';
 END
 
+test('-base', <<'END', {'Mojo::Base' => 0});
+use Mojo::Base -base;
+END
+
+test('-strict', <<'END', {'Mojo::Base' => 0});
+use Mojo::Base '-strict';
+END
+
 done_testing;
