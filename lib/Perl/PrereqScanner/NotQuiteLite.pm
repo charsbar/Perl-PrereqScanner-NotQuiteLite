@@ -42,13 +42,16 @@ sub _match_error {
 
 my %unsupported_packages = map {$_ => 1} qw(
   Perl6::Attributes
-  Text::RewriteRules
-  tt
 );
 
 my %sub_keywords = (
   'Function::Parameters' => [qw/fun method/],
   'TryCatch' => [qw/try catch/],
+);
+
+my %filter_modules = (
+  tt => sub { ${$_[0]} =~ s|\G.+?no\s*tt\s*;||s; 0; },
+  'Text::RewriteRules' => sub { ${$_[0]} =~ s|RULES.+?ENDRULES\n||gs; 1 },
 );
 
 my %is_conditional = map {$_ => 1} qw(
@@ -2004,6 +2007,12 @@ _debug("USE TOKENS: ".(Data::Dump::dump($tokens))) if DEBUG;
     if (exists $sub_keywords{$name}) {
       $c->register_sub_keywords(@{$sub_keywords{$name}});
       $c->prototype_re(qr{\G(\((?:[^\\\(\)]*(?:\\.[^\\\(\)]*)*)\))});
+    }
+    if (exists $filter_modules{$name}) {
+      my $tmp = pos($$rstr);
+      my $redo = $filter_modules{$name}->($rstr);
+      pos($$rstr) = $tmp;
+      $c->{ended} = $c->{redo} = 1 if $redo;
     }
   }
 
