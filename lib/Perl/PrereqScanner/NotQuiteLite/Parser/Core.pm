@@ -27,9 +27,9 @@ sub parse_if_args {
   if (is_module_name($module)) {
     if (is_version($tokens->[0])) {
       my $version = shift @$tokens;
-      $c->add($module => $version);
+      $c->add_recommendation($module => $version);
     } else {
-      $c->add($module => 0);
+      $c->add_recommendation($module => 0);
     }
   } else {
     push @{$c->{errors}}, "use if module not found";
