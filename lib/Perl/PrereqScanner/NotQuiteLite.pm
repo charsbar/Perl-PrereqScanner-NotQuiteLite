@@ -18,10 +18,10 @@ our @DEFAULT_PARSERS = qw/Core Moose/;
 
 ### Helpers For Debugging
 
-use constant DEBUG => $ENV{PERL_PSNQL_DEBUG} || 0;
+use constant DEBUG => !!$ENV{PERL_PSNQL_DEBUG} || 0;
 use constant DEBUG_RE => DEBUG > 3 ? 1 : 0;
 
-if (!!DEBUG) {
+if (DEBUG) {
   require Data::Dump; Data::Dump->import(qw/dump/);
   sub _debug { print @_, "\n" }
   sub _error { print @_, "*" x 50, "\n" }
@@ -299,7 +299,7 @@ sub _skim_string {
 sub _scan {
   my ($self, $c, $rstr, $parent_scope) = @_;
 
-  _dump_stack($c, "BEGIN SCOPE") if !!DEBUG;
+  _dump_stack($c, "BEGIN SCOPE") if DEBUG;
 
   # found __DATA|END__ somewhere?
   return $c if $c->{ended};
@@ -667,7 +667,7 @@ sub _scan {
           next;
         } else {
           # the above may fail
-          _debug("REGEXP ERROR: $@") if !!DEBUG;
+          _debug("REGEXP ERROR: $@") if DEBUG;
           pos($$rstr) = $pos;
         }
       }
@@ -677,7 +677,7 @@ sub _scan {
           next;
         } else { 
           # the above may fail
-          _debug("REGEXP ERROR: $@") if !!DEBUG;
+          _debug("REGEXP ERROR: $@") if DEBUG;
           pos($$rstr) = $pos;
         }
       }
@@ -1125,7 +1125,7 @@ sub _scan {
             ($token, $token_desc, $token_type) = ($quotelike, 'STRING', 'STRING');
             next;
           } else {
-            _debug("QUOTELIKE ERROR: $@") if !!DEBUG;
+            _debug("QUOTELIKE ERROR: $@") if DEBUG;
             pos($$rstr) = $pos;
           }
         } elsif ($$rstr =~ m{\G((?:qw)\b(?!\s*=>))}gc) {
@@ -1133,7 +1133,7 @@ sub _scan {
             ($token, $token_desc, $token_type) = ($quotelike, 'QUOTED_WORD_LIST', 'TERM');
             next;
           } else {
-            _debug("QUOTELIKE ERROR: $@") if !!DEBUG;
+            _debug("QUOTELIKE ERROR: $@") if DEBUG;
             pos($$rstr) = $pos;
           }
         } elsif ($$rstr =~ m{\G((?:qx)\b(?!\s*=>))}gc) {
@@ -1141,7 +1141,7 @@ sub _scan {
             ($token, $token_desc, $token_type) = ($quotelike, 'BACKTICK', 'TERM');
             next;
           } else {
-            _debug("QUOTELIKE ERROR: $@") if !!DEBUG;
+            _debug("QUOTELIKE ERROR: $@") if DEBUG;
             pos($$rstr) = $pos;
           }
         } elsif ($$rstr =~ m{\G(qr\b(?!\s*=>))}gc) {
@@ -1149,7 +1149,7 @@ sub _scan {
             ($token, $token_desc, $token_type) = ($regexp, 'qr', 'TERM');
             next;
           } else {
-            _debug("QUOTELIKE ERROR: $@") if !!DEBUG;
+            _debug("QUOTELIKE ERROR: $@") if DEBUG;
             pos($$rstr) = $pos;
           }
         }
@@ -1159,7 +1159,7 @@ sub _scan {
             ($token, $token_desc, $token_type) = ($regexp, 'm', 'TERM');
             next;
           } else {
-            _debug("REGEXP ERROR: $@") if !!DEBUG;
+            _debug("REGEXP ERROR: $@") if DEBUG;
             pos($$rstr) = $pos;
           }
         }
@@ -1169,7 +1169,7 @@ sub _scan {
             ($token, $token_desc, $token_type) = ($regexp, 's', 'TERM');
             next;
           } else {
-            _debug("SUBSTITUTE ERROR: $@") if !!DEBUG;
+            _debug("SUBSTITUTE ERROR: $@") if DEBUG;
             pos($$rstr) = $pos;
           }
         }
@@ -1179,7 +1179,7 @@ sub _scan {
             ($token, $token_desc, $token_type) = ($trans, 'tr', 'TERM');
             next;
           } else {
-            _debug("TRANSLITERATE ERROR: $@") if !!DEBUG;
+            _debug("TRANSLITERATE ERROR: $@") if DEBUG;
             pos($$rstr) = $pos;
           }
         }
@@ -1189,7 +1189,7 @@ sub _scan {
             ($token, $token_desc, $token_type) = ($trans, 'y', 'TERM');
             next;
           } else {
-            _debug("TRANSLITERATE ERROR: $@") if !!DEBUG;
+            _debug("TRANSLITERATE ERROR: $@") if DEBUG;
             pos($$rstr) = $pos;
           }
         }
@@ -1250,7 +1250,7 @@ sub _scan {
         _error("UNICODE?: $1");
         push @{$c->{errors}}, qq{"$1"};
       } else {
-        _debug("UTF8: $1") if !!DEBUG;
+        _debug("UTF8: $1") if DEBUG;
       }
       $token = $1;
       next;
@@ -1269,16 +1269,16 @@ sub _scan {
 
     if (defined $token) {
       if (!($current_scope & F_EXPR)) {
-        _debug('BEGIN EXPR') if !!DEBUG;
+        _debug('BEGIN EXPR') if DEBUG;
         $current_scope |= F_EXPR;
       } elsif (($current_scope & F_EXPR) and (($current_scope & F_EXPR_END) or ($ends_expr{$token} and $token_type eq 'KEYWORD' and $prev_token ne ',' and $prev_token ne '=>'))) {
         @keywords = ();
-        _debug('END EXPR') if !!DEBUG;
+        _debug('END EXPR') if DEBUG;
         $current_scope &= MASK_EXPR_END;
       }
       $prepend = undef;
 
-      if (!!DEBUG) {
+      if (DEBUG) {
         my $token_str = ref $token ? Data::Dump::dump($token) : $token;
         _debug("GOT: $token_str ($pos) TYPE: $token_desc ($token_type)".($prev_token_type ? " PREV: $prev_token_type" : '').(@keywords ? " KEYWORD: @keywords" : '').(($current_scope | $parent_scope) & F_EVAL ? ' EVAL' : '').(($current_scope | $parent_scope) & F_KEEP_TOKENS ? ' KEEP' : ''));
       }
@@ -1349,7 +1349,7 @@ sub _scan {
       }
       if ($stack) {
         push @{$c->{stack}}, $stack;
-        _dump_stack($c, $stack->[0]) if !!DEBUG;
+        _dump_stack($c, $stack->[0]) if DEBUG;
         my $child_scope = $current_scope | $parent_scope;
         if ($token eq '{' and $is_conditional{$stack->[2]}) {
           $child_scope |= F_CONDITIONAL
@@ -1392,7 +1392,7 @@ sub _scan {
           die "mismatch $stacked_type $unstack\n" .
               substr($$rstr, $prev_pos, pos($$rstr) - $prev_pos);
         }
-        _dump_stack($c, $unstack) if !!DEBUG;
+        _dump_stack($c, $unstack) if DEBUG;
         $current_scope |= F_SCOPE_END;
         $unstack = undef;
       }
@@ -1467,7 +1467,7 @@ sub _scan {
         $current_scope &= MASK_SENTENCE_END;
         $caller_package = undef;
         $token = $token_type = '';
-        _debug('END SENTENSE') if !!DEBUG;
+        _debug('END SENTENSE') if DEBUG;
       }
 
       last if $current_scope & F_SCOPE_END;
@@ -1496,7 +1496,7 @@ sub _scan {
     }
   }
 
-  _dump_stack($c, "END SCOPE") if !!DEBUG;
+  _dump_stack($c, "END SCOPE") if DEBUG;
 
   \@scope_tokens;
 }
@@ -1712,7 +1712,7 @@ sub _scan_re {
   my ($self, $c, $rstr, $ldel, $rdel, $op) = @_;
   my $startpos = pos($$rstr) || 0;
 
-  _debug(" L $ldel R $rdel") if !!DEBUG_RE;
+  _debug(" L $ldel R $rdel") if DEBUG_RE;
 
   my ($outer_opening_delimiter, $outer_closing_delimiter);
   if (@{$c->{stack}}) {
@@ -1730,42 +1730,42 @@ sub _scan_re {
       $$rstr =~ m{\G\n\s*}gcs;
       $multiline = 1;
       $saw_sharp = 0;
-      # _debug("CRLF") if !!DEBUG_RE;
+      # _debug("CRLF") if DEBUG_RE;
       next;
     }
     if ($c1 eq ' ' or $c1 eq "\t") {
       $$rstr =~ m{\G\s*}gc;
-      # _debug("WHITESPACE") if !!DEBUG_RE;
+      # _debug("WHITESPACE") if DEBUG_RE;
       next;
     }
     if ($c1 eq '#' and $rdel ne '#') {
       if ($multiline and $$rstr =~ m{\G(#[^\Q$rdel\E]*?)\n}gcs) {
-        _debug(" comment $1") if !!DEBUG_RE
+        _debug(" comment $1") if DEBUG_RE
       } else {
         pos($$rstr) = $p + 1;
         $saw_sharp = 1;
-        _debug(" saw #") if !!DEBUG_RE;
+        _debug(" saw #") if DEBUG_RE;
       }
       next;
     }
 
     if ($c1 eq '\\' and $rdel ne '\\') {
       if ($$rstr =~ m/\G(\\.)/gcs) {
-        _debug(" escaped $1") if !!DEBUG_RE;
+        _debug(" escaped $1") if DEBUG_RE;
         next;
       }
     }
 
-    _debug(" looking @nesting: $c1") if !!DEBUG_RE;
+    _debug(" looking @nesting: $c1") if DEBUG_RE;
 
     if ($c1 eq '[') {
       # character class may have other (ignorable) delimiters
       if ($$rstr =~ m/\G(\[\[:\w+?:\]\])/gcs) {
-        _debug(" character class $1") if !!DEBUG_RE;
+        _debug(" character class $1") if DEBUG_RE;
         next;
       }
       if ($$rstr =~ m/\G(\[[^\\\]]]*?(\\.[^\\\]]]*)*\])/gcs) {
-        _debug(" character class: $1") if !!DEBUG_RE;
+        _debug(" character class: $1") if DEBUG_RE;
         next;
       }
     }
@@ -1775,17 +1775,17 @@ sub _scan_re {
       if ($saw_sharp) {
         my $tmp_pos = $p + 1;
         if ($op eq 's') {
-          _debug(" looking for latter part") if !!DEBUG_RE;
+          _debug(" looking for latter part") if DEBUG_RE;
           my $latter = $self->_scan_re2($c, $rstr, $ldel, $op);
           if (!defined $latter) {
             pos($$rstr) = $tmp_pos;
             next;
           }
-          _debug(" latter: $latter") if !!DEBUG_RE;
+          _debug(" latter: $latter") if DEBUG_RE;
         }
         if ($$rstr =~ m/\G[a-wyz]*x/) {
           # looks like an end of block
-          _debug(" end of block $rdel (after #)") if !!DEBUG_RE;
+          _debug(" end of block $rdel (after #)") if DEBUG_RE;
           @nesting = ();
           pos($$rstr) = $tmp_pos;
           last;
@@ -1795,7 +1795,7 @@ sub _scan_re {
           next; # part of a comment
         }
       }
-      _debug(" end of block $rdel") if !!DEBUG_RE;
+      _debug(" end of block $rdel") if DEBUG_RE;
       my $expected = $rdel;
       if ($ldel ne $rdel) {
         $expected =~ tr/)}]>/({[</;
@@ -1809,7 +1809,7 @@ sub _scan_re {
       pos($$rstr) = $p + 1;
       if ($multiline and $saw_sharp) {
       } else {
-        _debug(" block $ldel") if !!DEBUG_RE;
+        _debug(" block $ldel") if DEBUG_RE;
         push @nesting, $ldel;
         next;
       }
@@ -1818,7 +1818,7 @@ sub _scan_re {
     if ($c1 eq '{') {
       # quantifier shouldn't be nested
       if ($$rstr =~ m/\G({[0-9]+(?:,(?:[0-9]+)?)?})/gcs) {
-        _debug(" quantifier $1") if !!DEBUG_RE;
+        _debug(" quantifier $1") if DEBUG_RE;
         next;
       }
     }
@@ -1828,24 +1828,24 @@ sub _scan_re {
       if ($c2 eq '?' and !($multiline and $saw_sharp)) {
         # code
         if ($$rstr =~ m/\G((\()\?+?)(?=\{)/gc) {
-          _debug(" code $1") if !!DEBUG_RE;
+          _debug(" code $1") if DEBUG_RE;
           push @nesting, $2;
           unless (eval { $self->_scan($c, $rstr, F_EXPECTS_BRACKET); 1 }) {
-            _debug("scan failed") if !!DEBUG_RE;
+            _debug("scan failed") if DEBUG_RE;
             return;
           }
           next;
         }
         # comment
         if ($$rstr =~ m{\G(\(\?\#[^\\\)]*(?:\\.[^\\\)]*)*\))}gcs) {
-          _debug(" comment $1") if !!DEBUG_RE;
+          _debug(" comment $1") if DEBUG_RE;
           next;
         }
       }
 
       # grouping may have (ignorable) <>
       if ($$rstr =~ m/\G((\()(?:<[!=]|<\w+?>|>)?)/gc) {
-        _debug(" group $1") if !!DEBUG_RE;
+        _debug(" group $1") if DEBUG_RE;
         push @nesting, $2;
         next;
       }
@@ -1861,7 +1861,7 @@ sub _scan_re {
 
     if ($c1 eq ')') {
       if (@nesting and $nesting[-1] eq '(') {
-        _debug(" end of group $c1") if !!DEBUG_RE;
+        _debug(" end of group $c1") if DEBUG_RE;
         pop @nesting;
         pos($$rstr) = $p + 1;
         next;
@@ -1890,7 +1890,7 @@ sub _scan_re {
     }
 
     if ($$rstr =~ m/\G(\w+|.)/gcs) {
-      _debug(" rest $1") if !!DEBUG_RE;
+      _debug(" rest $1") if DEBUG_RE;
       next;
     }
     last;
@@ -1955,7 +1955,7 @@ sub _scan_re2 {
 
 sub _use {
   my ($c, $rstr, $tokens) = @_;
-_debug("USE TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
+_debug("USE TOKENS: ".(Data::Dump::dump($tokens))) if DEBUG;
   shift @$tokens; # discard 'use' itself
 
   # TODO: see if the token is WORD or not?
@@ -1985,7 +1985,7 @@ _debug("USE TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
     $c->{utf8} = 1;
     if (!$c->{decoded}) {
       $c->{decoded} = 1;
-      _debug("UTF8 IS ON") if !!DEBUG;
+      _debug("UTF8 IS ON") if DEBUG;
       utf8::decode($$rstr);
       pos($$rstr) = 0;
       $c->{ended} = $c->{redo} = 1;
@@ -2023,7 +2023,7 @@ _debug("USE TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
 
 sub _require {
   my ($c, $rstr, $tokens) = @_;
-_debug("REQUIRE TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
+_debug("REQUIRE TOKENS: ".(Data::Dump::dump($tokens))) if DEBUG;
   shift @$tokens; # discard 'require' itself
 
   # TODO: see if the token is WORD or not?
@@ -2063,7 +2063,7 @@ _debug("REQUIRE TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
 
 sub _no {
   my ($c, $rstr, $tokens) = @_;
-_debug("NO TOKENS: ".(Data::Dump::dump($tokens))) if !!DEBUG;
+_debug("NO TOKENS: ".(Data::Dump::dump($tokens))) if DEBUG;
   shift @$tokens; # discard 'no' itself
 
   # TODO: see if the token is WORD or not?
