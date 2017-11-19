@@ -12,7 +12,7 @@ our @BUNDLED_PARSERS = qw/
   Aliased AnyMoose Autouse Catalyst ClassAccessor ClassLoad Core
   Inline Mixin ModuleRuntime MojoBase Moose MooseXDeclare
   Plack POE Superclass Syntax TestMore TestRequires
-  UniversalVersion
+  UniversalVersion Unless
 /;
 our @DEFAULT_PARSERS = qw/Core Moose/;
 
