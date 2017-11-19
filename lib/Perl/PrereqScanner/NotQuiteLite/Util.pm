@@ -34,6 +34,7 @@ our @EXPORT = ((keys %FLAGS), qw/
   is_module_name
   is_version
   convert_string_tokens
+  convert_string_token_list
   MASK_KEEP_TOKENS
   MASK_EXPR_END
   MASK_SENTENCE_END
@@ -89,6 +90,45 @@ sub convert_string_tokens {
     $prev = $desc;
   }
   \@tokens;
+}
+
+sub convert_string_token_list {
+  my $org_tokens = shift;
+  my @list;
+  my @tokens;
+  my @copied_tokens = @$org_tokens;
+  my $prev = '';
+  while(my $copied_token = shift @copied_tokens) {
+    my ($token, $desc) = @$copied_token;
+    if ($desc and $desc eq '()' and $prev ne 'WORD') {
+      unshift @copied_tokens, @$token;
+      next;
+    }
+
+    if (!$desc) {
+      push @tokens, $copied_token;
+    } elsif ($desc eq 'VERSION_STRING' or $desc eq 'NUMBER') {
+      push @tokens, $token;
+    } elsif ($desc eq 'STRING') {
+      push @tokens, $token->[0];
+    } elsif ($desc eq 'QUOTED_WORD_LIST') {
+      push @list, grep {defined $_ and $_ ne ''} split /\s/, $token->[0];
+    } elsif ($token eq ',' or $token eq '=>') {
+      push @list, @tokens == 1 ? $tokens[0] : \@tokens;
+      @tokens = ();
+      $prev = '';
+    } elsif ($desc eq ';') {
+      last;
+    } else {
+      push @tokens, $copied_token;
+    }
+    $prev = $desc;
+  }
+  if (@tokens) {
+    push @list, @tokens == 1 ? $tokens[0] : \@tokens;
+  }
+
+  \@list;
 }
 
 1;
