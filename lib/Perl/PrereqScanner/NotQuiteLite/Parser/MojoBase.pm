@@ -17,7 +17,13 @@ sub parse_mojo_base_args {
   if (is_version($tokens->[0])) {
     $c->add($used_module => shift @$tokens);
   }
-  $c->add($_ => 0) for grep {!ref $_} @$tokens;
+  my $module = $tokens->[0];
+  if (ref $module) {
+    $module = $module->[0];
+  }
+  if (is_module_name($module)) {
+    $c->add($module => 0);
+  }
 }
 
 1;
