@@ -10,7 +10,7 @@ our $VERSION = '0.50';
 
 our @BUNDLED_PARSERS = qw/
   Aliased AnyMoose Autouse Catalyst ClassAccessor
-  ClassLoad Core Inline Mixin ModuleRuntime
+  ClassAutouse ClassLoad Core Inline Mixin ModuleRuntime
   MojoBase Moose MooseXDeclare Only Plack POE Prefork
   Superclass Syntax SyntaxCollector TestClassMost TestMore
   TestRequires UniversalVersion Unless
