@@ -4,11 +4,21 @@ use strict;
 use warnings;
 use Perl::PrereqScanner::NotQuiteLite::Util;
 
-sub register { return {
-  use => {
-    'Mojo::Base' => 'parse_mojo_base_args',
-  },
-}}
+my @MojoBaseLike = qw/
+  Mojo::Base
+  Mojo::Weixin::Base Mojo::Webqq::Base 
+  Kelp::Base Rethinkdb::Base PMLTQ::Base
+/;
+
+sub register {
+  my ($class, %args) = @_;
+  my %mojo_base_like = map {$_ => 1} (@MojoBaseLike, @{$args{mojo_base_like} || []});
+  my %mapping;
+  for my $module (keys %mojo_base_like) {
+    $mapping{use}{$module} = 'parse_mojo_base_args';
+  }
+  return \%mapping;
+}
 
 sub parse_mojo_base_args {
   my ($class, $c, $used_module, $raw_tokens) = @_;
