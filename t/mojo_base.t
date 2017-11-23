@@ -23,4 +23,8 @@ test('-strict', <<'END', {'Mojo::Base' => 0});
 use Mojo::Base '-strict';
 END
 
+test('package with a single quote', <<'END', {'Mojo::Base' => 0, 'Mojo::BaseTestTest' => 0});
+use Mojo::Base "Mojo'BaseTestTest";
+END
+
 done_testing;

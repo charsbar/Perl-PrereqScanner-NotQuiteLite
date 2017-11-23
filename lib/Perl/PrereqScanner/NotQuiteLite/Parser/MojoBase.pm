@@ -22,6 +22,7 @@ sub parse_mojo_base_args {
     $module = $module->[0];
   }
   if (is_module_name($module)) {
+    $module =~ s|'|::|g;
     $c->add($module => 0);
   }
 }
