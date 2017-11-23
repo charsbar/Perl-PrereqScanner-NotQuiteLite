@@ -20,6 +20,7 @@ sub new {
 
   $opts{prereqs} = CPAN::Meta::Prereqs->new;
   $opts{parsers} = [':installed'] unless defined $opts{parsers};
+  $opts{recommends} = 0 unless defined $opts{recommends};
   $opts{suggests} = 0 unless defined $opts{suggests};
   $opts{base_dir} ||= File::Spec->curdir;
 
@@ -97,7 +98,7 @@ sub _requirements {
   my $prereqs = $self->{prereqs};
   my @phases = qw/configure runtime test/;
   push @phases, 'develop' if $self->{develop};
-  my @types = $self->{suggests} ? qw/requires suggests/ : qw/requires/;
+  my @types = $self->{suggests} ? qw/requires recommends suggests/ : $self->{recommends} ? qw/requires recommends/ : qw/requires/;
   my @requirements;
   for my $phase (@phases) {
     for my $type (@types) {
@@ -164,6 +165,7 @@ sub _scan_file {
 
   my $context = Perl::PrereqScanner::NotQuiteLite->new(
     parsers => $self->{parsers},
+    recommends => $self->{recommends},
     suggests => $self->{suggests},
   )->scan_file($file);
 
@@ -197,10 +199,15 @@ sub _add {
   $prereqs->requirements_for($phase, 'requires')
           ->add_requirements($context->requires);
 
-  return unless $self->{suggests};
+  if ($self->{suggests} or $self->{recommends}) {
+    $prereqs->requirements_for($phase, 'recommends')
+            ->add_requirements($context->recommends);
+  }
 
-  $prereqs->requirements_for($phase, 'suggests')
-          ->add_requirements($context->suggests);
+  if ($self->{suggests}) {
+    $prereqs->requirements_for($phase, 'suggests')
+            ->add_requirements($context->suggests);
+  }
 }
 
 1;

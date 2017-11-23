@@ -65,13 +65,16 @@ sub test_app {
   );
   $setup->($tmpdir);
 
+  my $recommends = 0;
   my $suggests = 0;
   for my $phase (keys %$expected) {
+    $recommends = 1 if $expected->{$phase}{recommends};
     $suggests = 1 if $expected->{$phase}{suggests};
   }
 
   my $prereqs = Perl::PrereqScanner::NotQuiteLite::App->new(
     base_dir => $tmpdir,
+    recommends => $recommends,
     suggests => $suggests,
   )->run->as_string_hash;
 

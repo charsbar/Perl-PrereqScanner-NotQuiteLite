@@ -56,8 +56,10 @@ sub new {
     stash => {},
   );
 
-  if ($args{suggests}) {
+  if ($args{suggests} or $args{recommends}) {
     $context{recommends} = CPAN::Meta::Requirements->new;
+  }
+  if ($args{suggests}) {
     $context{suggests} = CPAN::Meta::Requirements->new;
   }
   for my $type (qw/use no method keyword sub/) {

@@ -15,6 +15,7 @@ GetOptions(\my %opts, qw/
   exclude-core
   perl-version=s
   base-dir=s
+  recommends
   suggests
   develop
   blib
