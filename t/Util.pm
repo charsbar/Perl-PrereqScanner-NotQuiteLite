@@ -59,7 +59,9 @@ sub test {
 sub used { return {map {$_ => 0} @_} }
 
 sub test_app {
-  my ($setup, $expected) = @_;
+  my ($description, $setup, $expected) = @_;
+  note $description;
+
   my $tmpdir = tempdir(
     'PerlPrereqScannerNQLite_XXXX',
     CLEANUP => 1,
@@ -95,7 +97,9 @@ sub test_file {
 }
 
 sub test_cpanfile {
-  my ($setup, $args, $expected) = @_;
+  my ($description, $setup, $args, $expected) = @_;
+  note $description;
+
   my $tmpdir = tempdir(
     'PerlPrereqScannerNQLite_XXXX',
     CLEANUP => 1,

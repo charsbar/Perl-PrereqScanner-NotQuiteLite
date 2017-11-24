@@ -5,8 +5,7 @@ use lib "$FindBin::Bin/../../";
 use Test::More;
 use t::Util;
 
-note 'no cpanfile';
-test_cpanfile(sub {
+test_cpanfile('no cpanfile', sub {
   my $tmpdir = shift;
   my $tmpfile = "$tmpdir/MyTest.pm";
 
@@ -19,8 +18,7 @@ requires 'strict';
 requires 'warnings';
 CPANFILE
 
-note 'existing cpanfile';
-test_cpanfile(sub {
+test_cpanfile('existing cpanfile', sub {
   my $tmpdir = shift;
   my $tmpfile = "$tmpdir/MyTest.pm";
 
@@ -38,8 +36,7 @@ requires 'strict';
 requires 'warnings';
 CPANFILE
 
-note 'cpanfile with extra requirements';
-test_cpanfile(sub {
+test_cpanfile('cpanfile with extra requirements', sub {
   my $tmpdir = shift;
   my $tmpfile = "$tmpdir/MyTest.pm";
 
@@ -59,8 +56,7 @@ requires 'strict';
 requires 'warnings';
 CPANFILE
 
-note 'cpanfile with features';
-test_cpanfile(sub {
+test_cpanfile('cpanfile with features', sub {
   my $tmpdir = shift;
   my $tmpfile = "$tmpdir/MyTest.pm";
 
@@ -85,8 +81,7 @@ feature 'foo', 'foo' => sub {
 };
 CPANFILE
 
-note 'new feature';
-test_cpanfile(sub {
+test_cpanfile('new feature', sub {
   my $tmpdir = shift;
   my $tmpfile = "$tmpdir/MyTest.pm";
 
@@ -101,8 +96,7 @@ feature 'foo', 'foo' => sub {
 };
 CPANFILE
 
-note 'merge feature';
-test_cpanfile(sub {
+test_cpanfile('merge feature', sub {
   my $tmpdir = shift;
   my $tmpfile = "$tmpdir/MyTest.pm";
 
@@ -124,8 +118,7 @@ feature 'foo', 'foo' => sub {
 };
 CPANFILE
 
-note 'x_phase';
-test_cpanfile(sub {
+test_cpanfile('x_phase', sub {
   my $tmpdir = shift;
   my $tmpfile = "$tmpdir/MyTest.pm";
 

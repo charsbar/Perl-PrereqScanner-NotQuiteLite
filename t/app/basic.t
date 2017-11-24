@@ -5,7 +5,7 @@ use lib "$FindBin::Bin/../../";
 use Test::More;
 use t::Util;
 
-test_app(sub {
+test_app('basic', sub {
   my $tmpdir = shift;
   my $tmpfile = "$tmpdir/MyTest.pm";
 
