@@ -163,8 +163,6 @@ sub _exclude_core_prereqs {
       }
     }
   }
-  my $req = $self->{prereqs}->requirements_for('runtime', 'requires');
-  $req->add_minimum(perl => $perl_version);
 }
 
 sub _scan_dir {
