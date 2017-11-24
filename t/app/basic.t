@@ -51,4 +51,14 @@ use MyTest;
 END
 }, {}, { runtime => { requires => { strict => 0, warnings => 0 }}});
 
+test_app('ignore core modules', sub {
+  my $tmpdir = shift;
+
+  test_file("$tmpdir/MyTest.pm", <<'END');
+use strict;
+use warnings;
+use Foo;
+END
+}, {exclude_core => 1}, { runtime => { requires => { Foo => 0 }}});
+
 done_testing;
