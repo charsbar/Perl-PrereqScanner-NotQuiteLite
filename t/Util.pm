@@ -67,22 +67,16 @@ sub test_app {
   );
   $setup->($tmpdir);
 
-  my $recommends = 0;
-  my $suggests = 0;
-  for my $phase (keys %$expected) {
-    $recommends = 1 if $expected->{$phase}{recommends};
-    $suggests = 1 if $expected->{$phase}{suggests};
-  }
-
   my $prereqs = Perl::PrereqScanner::NotQuiteLite::App->new(
+    parsers => [':bundled'],
     base_dir => $tmpdir,
-    recommends => $recommends,
-    suggests => $suggests,
+    recommends => 1,
+    suggests => 1,
   )->run->as_string_hash;
 
-  for my $phase (sort keys %$expected) {
-    for my $type (sort keys %{$expected->{$phase}}) {
-      for my $module (sort keys %{$expected->{$phase}{$type}}) {
+  for my $phase (sort keys %$prereqs) {
+    for my $type (sort keys %{$prereqs->{$phase}}) {
+      for my $module (sort keys %{$prereqs->{$phase}{$type}}) {
         is $prereqs->{$phase}{$type}{$module} => $expected->{$phase}{$type}{$module}, "found $module as $phase $type";
       }
     }
