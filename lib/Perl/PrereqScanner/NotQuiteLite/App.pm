@@ -225,18 +225,18 @@ sub _scan_file {
     }
   }
 
-  if ($file =~ m!(?:^|[\\/])(?:Makefile|Build)\.PL$!) {
+  if ($relpath =~ m!(?:^|[\\/])(?:Makefile|Build)\.PL$!) {
     $self->_add($prereqs, configure => $context);
-  } elsif ($file =~ m!(?:^|[\\/])t[\\/]!) {
+  } elsif ($relpath =~ m!(?:^|[\\/])t[\\/]!) {
     $self->_add($prereqs, test => $context);
-  } elsif ($file =~ m!(?:^|[\\/])(?:xt|inc|author)[\\/]!) {
+  } elsif ($relpath =~ m!(?:^|[\\/])(?:xt|inc|author)[\\/]!) {
     $self->_add($prereqs, develop => $context);
   } else {
     $self->_add($prereqs, runtime => $context);
   }
 
-  if ($file =~ /\.pm$/) {
-    my $module = $file;
+  if ($relpath =~ /\.pm$/) {
+    my $module = $relpath;
     $module =~ s!\.pm$!!;
     $module =~ s![\\/]!::!g;
     $self->{possible_modules}{$module} = 1;

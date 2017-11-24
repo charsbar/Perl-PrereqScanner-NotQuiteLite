@@ -38,4 +38,17 @@ package Foo::Bar;
 END
 }, { runtime => { requires => { strict => 0, warnings => 0 }}});
 
+test_app('ignore local file', sub {
+  my $tmpdir = shift;
+
+  test_file("$tmpdir/MyTest.pm", <<'END');
+use strict;
+use warnings;
+END
+
+  test_file("$tmpdir/MyTest2.pm", <<'END');
+use MyTest;
+END
+}, { runtime => { requires => { strict => 0, warnings => 0 }}});
+
 done_testing;
