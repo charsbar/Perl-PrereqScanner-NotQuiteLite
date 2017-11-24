@@ -126,70 +126,51 @@ sub _optional {
 }
 
 sub add {
-  my ($self, $module, $version) = @_;
-  return unless is_module_name($module);
-
-  my $CMR = $self->_object or return;
-  $version = 0 unless defined $version;
-  $CMR->add_minimum($module, "$version");
+  shift->_add('requires', @_);
 }
 
 sub add_recommendation {
-  my ($self, $module, $version) = @_;
-  return unless is_module_name($module);
-
-  my $CMR = $self->_object('recommends') or return;
-  $version = 0 unless defined $version;
-  $CMR->add_minimum($module, "$version");
+  shift->_add('recommends', @_);
 }
 
 sub add_suggestion {
-  my ($self, $module, $version) = @_;
-  return unless is_module_name($module);
-
-  my $CMR = $self->_object('suggests') or return;
-  $version = 0 unless defined $version;
-  $CMR->add_minimum($module, "$version");
+  shift->_add('suggests', @_);
 }
 
 sub add_conditional {
-  my ($self, $module, $version) = @_;
+  shift->_add('conditional', @_);
+}
+
+sub _add {
+  my ($self, $type, $module, $version) = @_;
   return unless is_module_name($module);
 
-  my $CMR = $self->_object('conditional') or return;
+  my $CMR = $self->_object($type) or return;
   $version = 0 unless defined $version;
   $CMR->add_minimum($module, "$version");
 }
 
 sub has_added {
-  my ($self, $module) = @_;
-  return unless is_module_name($module);
-
-  my $CMR = $self->_object or return;
-  defined $CMR->requirements_for_module($module) ? 1 : 0;
+  shift->_has_added('requires', @_);
 }
 
 sub has_added_recommendation {
-  my ($self, $module) = @_;
-  return unless is_module_name($module);
-
-  my $CMR = $self->_object('recommends') or return;
-  defined $CMR->requirements_for_module($module) ? 1 : 0;
+  shift->_has_added('recommends', @_);
 }
 
 sub has_added_suggestion {
-  my ($self, $module) = @_;
-  return unless is_module_name($module);
-
-  my $CMR = $self->_object('suggests') or return;
-  defined $CMR->requirements_for_module($module) ? 1 : 0;
+  shift->_has_added('suggests', @_);
 }
 
 sub has_added_conditional {
-  my ($self, $module) = @_;
+  shift->_has_added('conditional', @_);
+}
+
+sub _has_added {
+  my ($self, $type, $module) = @_;
   return unless is_module_name($module);
 
-  my $CMR = $self->_object('conditional') or return;
+  my $CMR = $self->_object($type) or return;
   defined $CMR->requirements_for_module($module) ? 1 : 0;
 }
 
