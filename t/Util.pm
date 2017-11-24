@@ -10,7 +10,9 @@ use File::Temp qw/tempdir/;
 use File::Basename qw/dirname/;
 use File::Path qw/mkpath rmtree/;
 
-our @EXPORT = qw/test todo_test used test_app test_file/;
+our @EXPORT = qw/
+  test todo_test used test_app test_file test_cpanfile
+/;
 our $EVAL;
 our $PARSERS;
 
@@ -96,6 +98,33 @@ sub test_file {
   mkpath($dir) unless -d $dir;
   open my $fh, '>', $file or die "$file: $!";
   print $fh $body;
+}
+
+sub test_cpanfile {
+  my ($setup, $args, $expected) = @_;
+  my $tmpdir = tempdir(
+    'PerlPrereqScannerNQLite_XXXX',
+    CLEANUP => 1,
+    TMPDIR => 1,
+  );
+  $setup->($tmpdir);
+
+  my $prereqs = Perl::PrereqScanner::NotQuiteLite::App->new(
+    parsers => [':bundled'],
+    base_dir => $tmpdir,
+    recommends => 1,
+    suggests => 1,
+    save_cpanfile => 1,
+    %{$args || {}},
+  )->run;
+
+  my $file = "$tmpdir/cpanfile";
+  if (ok -f $file, "cpanfile exists") {
+    my $got = do { open my $fh, '<', $file; local $/; <$fh> };
+    is $got => $expected;
+  }
+
+  rmtree($tmpdir);
 }
 
 1;

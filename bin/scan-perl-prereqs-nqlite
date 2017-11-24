@@ -12,6 +12,8 @@ GetOptions(\my %opts, qw/
   version
   help
   json
+  cpanfile
+  save-cpanfile
   exclude-core
   perl-version=s
   base-dir=s
@@ -83,6 +85,10 @@ Show this help.
 =item json
 
 Print prerequisites as a JSON if L<JSON::PP> is installed.
+
+=item cpanfile, save-cpanfile
+
+Print prerequisites as C<cpanfile> if L<Module::CPANfile> is installed. If C<safe-cpanfile> is set, create or update C<cpanfile>.
 
 =item suggests
 

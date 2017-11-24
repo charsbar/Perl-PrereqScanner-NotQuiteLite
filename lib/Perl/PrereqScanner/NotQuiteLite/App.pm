@@ -24,6 +24,8 @@ sub new {
   $opts{suggests} = 0 unless defined $opts{suggests};
   $opts{base_dir} ||= File::Spec->curdir;
 
+  $opts{cpanfile} = 1 if $opts{save_cpanfile};
+
   bless \%opts, $class;
 }
 
@@ -64,10 +66,19 @@ sub run {
     $self->_exclude_core_prereqs;
   }
 
-  if ($self->{print}) {
+  if ($self->{print} or $self->{cpanfile}) {
     if ($self->{json}) {
       eval { require JSON::PP } or die "requires JSON::PP";
       print JSON::PP->new->pretty(1)->canonical->encode($self->{prereqs}->as_string_hash);
+    } elsif ($self->{cpanfile}) {
+      eval { require Perl::PrereqScanner::NotQuiteLite::Util::CPANfile } or die "requires Module::CPANfile";
+      my $file = File::Spec->catfile($self->{base_dir}, "cpanfile");
+      my $cpanfile = Perl::PrereqScanner::NotQuiteLite::Util::CPANfile->load_and_merge($file, $self->{prereqs}, $self->{features});
+      if ($self->{save_cpanfile}) {
+        $cpanfile->save($file);
+      } else {
+        print $cpanfile->to_string, "\n";
+      }
     } else {
       $self->_print_prereqs;
     }
