@@ -197,7 +197,7 @@ sub _scan_dir {
       return unless $relpath =~ /\.(?:pl|PL|pm|cgi|psgi|t)$/ or
                     dirname($relpath) =~ m!\b(?:bin|scripts?)$! or
                     ($self->{develop} and $relpath =~ /^(?:author)\b/);
-      $self->_scan_file($relpath);
+      $self->_scan_file($file);
     },
   }, $dir);
 }
