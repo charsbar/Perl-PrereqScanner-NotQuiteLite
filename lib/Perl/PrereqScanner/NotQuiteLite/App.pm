@@ -59,7 +59,7 @@ sub run {
 
   $self->_exclude_local_modules;
 
-  if ($self->{exclude_core} or $self->{perl_version}) {
+  if ($self->{exclude_core}) {
     eval { require Module::CoreList; Module::CoreList->VERSION('2.99') } or die "requires Module::CoreList 2.99";
     $self->_exclude_core_prereqs;
   }
