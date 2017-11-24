@@ -59,7 +59,7 @@ sub test {
 sub used { return {map {$_ => 0} @_} }
 
 sub test_app {
-  my ($description, $setup, $expected) = @_;
+  my ($description, $setup, $args, $expected) = @_;
   note $description;
 
   my $tmpdir = tempdir(
@@ -74,6 +74,7 @@ sub test_app {
     base_dir => $tmpdir,
     recommends => 1,
     suggests => 1,
+    %{$args || {}},
   )->run->as_string_hash;
 
   for my $phase (sort keys %$prereqs) {

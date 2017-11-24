@@ -12,7 +12,7 @@ test_app('.pm file in the root', sub {
 use strict;
 use warnings;
 END
-}, { runtime => { requires => { strict => 0, warnings => 0 }}});
+}, {}, { runtime => { requires => { strict => 0, warnings => 0 }}});
 
 test_app('.pm file under lib', sub {
   my $tmpdir = shift;
@@ -21,7 +21,7 @@ test_app('.pm file under lib', sub {
 use strict;
 use warnings;
 END
-}, { runtime => { requires => { strict => 0, warnings => 0 }}});
+}, {}, { runtime => { requires => { strict => 0, warnings => 0 }}});
 
 test_app('inc', sub {
   my $tmpdir = shift;
@@ -36,7 +36,7 @@ END
 package Foo::Bar;
 1;
 END
-}, { runtime => { requires => { strict => 0, warnings => 0 }}});
+}, {}, { runtime => { requires => { strict => 0, warnings => 0 }}});
 
 test_app('ignore local file', sub {
   my $tmpdir = shift;
@@ -49,6 +49,6 @@ END
   test_file("$tmpdir/MyTest2.pm", <<'END');
 use MyTest;
 END
-}, { runtime => { requires => { strict => 0, warnings => 0 }}});
+}, {}, { runtime => { requires => { strict => 0, warnings => 0 }}});
 
 done_testing;
