@@ -137,6 +137,26 @@ sub _requirements {
 sub _exclude_local_modules {
   my $self = shift;
 
+  my $inc_dir = File::Spec->catdir($self->{base_dir}, "inc");
+  if (-d $inc_dir) {
+    find({
+      wanted => sub {
+        my $file = $_;
+        return unless -f $file;
+        my $relpath = File::Spec->abs2rel($file, $self->{base_dir});
+
+        return unless $relpath =~ /\.pm$/;
+        my $module = $relpath;
+        $module =~ s!\.pm$!!;
+        $module =~ s![\\/]!::!g;
+        $self->{possible_modules}{$module} = 1;
+        $module =~ s!^inc::!!g;
+        $self->{possible_modules}{$module} = 1;
+      },
+      no_chdir => 1,
+    }, $inc_dir);
+  }
+
   for my $req ($self->_requirements) {
     for my $module ($req->required_modules) {
       $req->clear_requirement($module) if $self->{possible_modules}{$module};
