@@ -78,6 +78,8 @@ sub run {
     $self->_exclude_core_prereqs;
   }
 
+  $self->_dedupe;
+
   if ($self->{print} or $self->{cpanfile}) {
     if ($self->{json}) {
       # TODO: feature support (how should we express it?)
@@ -180,6 +182,39 @@ sub _exclude_core_prereqs {
       ) {
         my $core_version = $Module::CoreList::version{$perl_version}{$module} or next;
         $req->clear_requirement($module) if $req->accepts_module($module => $core_version);
+      }
+    }
+  }
+}
+
+sub _dedupe {
+  my $self = shift;
+
+  my $prereqs = $self->{prereqs};
+  for my $phase ($prereqs->phases) {
+    my $requires = $prereqs->requirements_for($phase, 'requires');
+    my @modules = $requires->required_modules;
+    for my $type (qw/recommends suggests/) {
+      my $target = $prereqs->requirements_for($phase, $type);
+      for my $module (@modules) {
+        my $version = $target->requirements_for_module($module);
+        next unless defined $version;
+        next unless $version =~ /^[0-9._]+$/;
+        next unless $requires->accepts_module($module, $version);
+        $target->clear_requirement($module);
+      }
+    }
+    for my $feature (values %{$self->{features} || {}}) {
+      my $feature_prereqs = $feature->{prereqs};
+      for my $type (qw/requires recommends suggests/) {
+        my $target = $feature_prereqs->requirements_for($phase, $type);
+        for my $module (@modules) {
+          my $version = $target->requirements_for_module($module);
+          next unless defined $version;
+          next unless $version =~ /^[0-9._]+$/;
+          next unless $requires->accepts_module($module, $version);
+          $target->clear_requirement($module);
+        }
       }
     }
   }

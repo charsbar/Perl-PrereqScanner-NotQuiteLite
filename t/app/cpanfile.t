@@ -7,7 +7,6 @@ use t::Util;
 
 test_cpanfile('no cpanfile', sub {
   my $tmpdir = shift;
-  my $tmpfile = "$tmpdir/MyTest.pm";
 
   test_file("$tmpdir/MyTest.pm", <<'END');
 use strict;
@@ -20,7 +19,6 @@ CPANFILE
 
 test_cpanfile('existing cpanfile', sub {
   my $tmpdir = shift;
-  my $tmpfile = "$tmpdir/MyTest.pm";
 
   test_file("$tmpdir/MyTest.pm", <<'END');
 use strict;
@@ -38,7 +36,6 @@ CPANFILE
 
 test_cpanfile('cpanfile with extra requirements', sub {
   my $tmpdir = shift;
-  my $tmpfile = "$tmpdir/MyTest.pm";
 
   test_file("$tmpdir/MyTest.pm", <<'END');
 use strict;
@@ -58,7 +55,6 @@ CPANFILE
 
 test_cpanfile('cpanfile with features', sub {
   my $tmpdir = shift;
-  my $tmpfile = "$tmpdir/MyTest.pm";
 
   test_file("$tmpdir/MyTest.pm", <<'END');
 use strict;
@@ -83,7 +79,6 @@ CPANFILE
 
 test_cpanfile('new feature', sub {
   my $tmpdir = shift;
-  my $tmpfile = "$tmpdir/MyTest.pm";
 
   test_file("$tmpdir/MyTest.pm", <<'END');
 use strict;
@@ -98,7 +93,6 @@ CPANFILE
 
 test_cpanfile('merge feature', sub {
   my $tmpdir = shift;
-  my $tmpfile = "$tmpdir/MyTest.pm";
 
   test_file("$tmpdir/MyTest.pm", <<'END');
 use strict;
@@ -115,6 +109,29 @@ feature 'foo', 'foo' => sub {
     requires 'Something::Else';
     requires 'strict';
     requires 'warnings';
+};
+CPANFILE
+
+test_cpanfile('dedupe feature', sub {
+  my $tmpdir = shift;
+
+  test_file("$tmpdir/MyTest.pm", <<'END');
+use strict;
+use warnings;
+use Foo;
+END
+
+  test_file("$tmpdir/MyTest2.pm", <<'END');
+use strict;
+use warnings;
+use Bar;
+END
+}, {features => 'foo:foo:MyTest2.pm'}, <<'CPANFILE');
+requires 'Foo';
+requires 'strict';
+requires 'warnings';
+feature 'foo', 'foo' => sub {
+    requires 'Bar';
 };
 CPANFILE
 

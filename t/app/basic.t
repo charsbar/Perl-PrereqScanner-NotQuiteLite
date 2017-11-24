@@ -61,4 +61,34 @@ use Foo;
 END
 }, {exclude_core => 1}, { runtime => { requires => { Foo => 0 }}});
 
+test_app('dedupe recommends/suggests', sub {
+  my $tmpdir = shift;
+
+  test_file("$tmpdir/MyTest.pm", <<'END');
+use strict;
+use warnings;
+END
+
+  test_file("$tmpdir/MyTest2.pm", <<'END');
+if (eval { require warnings }) {
+  require strict;
+}
+END
+}, {}, { runtime => { requires => { strict => 0, warnings => 0 }}});
+
+test_app('dedupe feature requires/recommends/suggests', sub {
+  my $tmpdir = shift;
+
+  test_file("$tmpdir/MyTest.pm", <<'END');
+use strict;
+use warnings;
+END
+
+  test_file("$tmpdir/MyTest2.pm", <<'END');
+if (eval { require warnings }) {
+  require strict;
+}
+END
+}, {features => 'foo:foo:MyTest2.pm'}, { runtime => { requires => { strict => 0, warnings => 0 }}});
+
 done_testing;
