@@ -2023,8 +2023,11 @@ _debug("USE TOKENS: ".(Data::Dump::dump($tokens))) if DEBUG;
     eval { $c->run_callback_for(use => $name, $tokens) };
     warn "Callback Error: $@" if $@;
   } elsif ($name =~ /\b(?:Mo[ou]se?X?|MooX?|Elk|Antlers|Role)\b/) {
-    eval { $c->run_callback_for(use => ($name =~ /Role/ ? 'Moose::Role' : 'Moose'), $tokens) };
-    warn "Callback Error: $@" if $@;
+    my $module = $name =~ /Role/ ? 'Moose::Role' : 'Moose';
+    if ($c->has_callback_for(use => $module)) {
+      eval { $c->run_callback_for(use => $module, $tokens) };
+      warn "Callback Error: $@" if $@;
+    }
   }
 
   if (exists $unsupported_packages{$name}) {
