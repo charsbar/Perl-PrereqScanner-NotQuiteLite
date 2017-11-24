@@ -26,6 +26,18 @@ sub new {
 
   $opts{cpanfile} = 1 if $opts{save_cpanfile};
 
+  if ($opts{features} and !ref $opts{features}) {
+    my %map;
+    for my $spec (split ';', $opts{features}) {
+      my ($identifier, $description, $paths) = split ':', $spec;
+      $map{$identifier} = {
+        description => $description,
+        paths => [split ',', $paths],
+      }
+    }
+    $opts{features} = \%map;
+  }
+
   bless \%opts, $class;
 }
 
@@ -68,6 +80,7 @@ sub run {
 
   if ($self->{print} or $self->{cpanfile}) {
     if ($self->{json}) {
+      # TODO: feature support (how should we express it?)
       eval { require JSON::PP } or die "requires JSON::PP";
       print JSON::PP->new->pretty(1)->canonical->encode($self->{prereqs}->as_string_hash);
     } elsif ($self->{cpanfile}) {
@@ -180,14 +193,28 @@ sub _scan_file {
     suggests => $self->{suggests},
   )->scan_file($file);
 
+  my $relpath = File::Spec->abs2rel($file, $self->{base_dir});
+  $relpath =~ s|\\|/|g if $^O eq 'MSWin32';
+
+  my $prereqs = $self->{prereqs};
+  if ($self->{features}) {
+    for my $identifier (keys %{$self->{features}}) {
+      my $feature = $self->{features}{$identifier};
+      if (grep {$relpath =~ m!^$_(?:/|$)!} @{$feature->{paths}}) {
+        $prereqs = $feature->{prereqs} ||= CPAN::Meta::Prereqs->new;
+        last;
+      }
+    }
+  }
+
   if ($file =~ m!(?:^|[\\/])(?:Makefile|Build)\.PL$!) {
-    $self->_add(configure => $context);
+    $self->_add($prereqs, configure => $context);
   } elsif ($file =~ m!(?:^|[\\/])t[\\/]!) {
-    $self->_add(test => $context);
+    $self->_add($prereqs, test => $context);
   } elsif ($file =~ m!(?:^|[\\/])(?:xt|inc|author)[\\/]!) {
-    $self->_add(develop => $context);
+    $self->_add($prereqs, develop => $context);
   } else {
-    $self->_add(runtime => $context);
+    $self->_add($prereqs, runtime => $context);
   }
 
   if ($file =~ /\.pm$/) {
@@ -203,9 +230,7 @@ sub _scan_file {
 }
 
 sub _add {
-  my ($self, $phase, $context) = @_;
-
-  my $prereqs = $self->{prereqs};
+  my ($self, $prereqs, $phase, $context) = @_;
 
   $prereqs->requirements_for($phase, 'requires')
           ->add_requirements($context->requires);

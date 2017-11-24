@@ -5,7 +5,7 @@ use warnings;
 use parent 'Module::CPANfile';
 
 sub load_and_merge {
-  my ($class, $file, $prereqs) = @_;
+  my ($class, $file, $prereqs, $features) = @_;
 
   $prereqs = $prereqs->as_string_hash unless ref $prereqs eq 'HASH';
 
@@ -17,17 +17,26 @@ sub load_and_merge {
     $self = $class->from_prereqs($prereqs);
   }
 
+  return $self unless $features;
+
+  for my $identifier (keys %$features) {
+    my $feature = $features->{$identifier};
+    $self->{_prereqs}->add_feature($identifier, $feature->{description});
+    $self->_add_prereqs($feature->{prereqs}, $identifier);
+  }
+
   $self;
 }
 
 sub _add_prereqs {
-  my ($self, $prereqs) = @_;
+  my ($self, $prereqs, $feature_id) = @_;
   $prereqs = $prereqs->as_string_hash unless ref $prereqs eq 'HASH';
 
   for my $phase (keys %$prereqs) {
     for my $type (keys %{$prereqs->{$phase}}) {
       while (my($module, $requirement) = each %{$prereqs->{$phase}{$type}}) {
         $self->{_prereqs}->add_prereq(
+          feature => $feature_id,
           phase => $phase,
           type  => $type,
           module => $module,
