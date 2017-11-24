@@ -47,7 +47,7 @@ sub run {
     }
 
     # for develop requires
-    push @args, "xt", "author", "inc" if $self->{develop};
+    push @args, "xt", "author" if $self->{develop};
   }
 
   for my $path (@args) {
