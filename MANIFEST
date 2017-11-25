@@ -34,6 +34,7 @@ lib/Perl/PrereqScanner/NotQuiteLite/Parser/Unless.pm
 lib/Perl/PrereqScanner/NotQuiteLite/Tokens.pm
 lib/Perl/PrereqScanner/NotQuiteLite/Util.pm
 lib/Perl/PrereqScanner/NotQuiteLite/Util/CPANfile.pm
+lib/Perl/PrereqScanner/NotQuiteLite/Util/Prereqs.pm
 LICENSE
 Makefile.PL
 MANIFEST			This list of files
@@ -67,7 +68,6 @@ t/moose/any_moose.t
 t/moose/class_accessor.t
 t/moose/moose.t
 t/moose/no_moose.t
-t/moose/todo.t
 t/moose/with_variable.t
 t/moosex_declare.t
 t/only.t
