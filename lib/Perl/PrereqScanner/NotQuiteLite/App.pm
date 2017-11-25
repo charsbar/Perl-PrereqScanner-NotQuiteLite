@@ -8,6 +8,7 @@ use File::Spec;
 use CPAN::Meta::Prereqs;
 use CPAN::Meta::Requirements;
 use Perl::PrereqScanner::NotQuiteLite;
+use Perl::PrereqScanner::NotQuiteLite::Util::Prereqs;
 
 sub new {
   my ($class, %opts) = @_;
@@ -191,33 +192,10 @@ sub _dedupe {
   my $self = shift;
 
   my $prereqs = $self->{prereqs};
-  for my $phase ($prereqs->phases) {
-    my $requires = $prereqs->requirements_for($phase, 'requires');
-    my @modules = $requires->required_modules;
-    for my $type (qw/recommends suggests/) {
-      my $target = $prereqs->requirements_for($phase, $type);
-      for my $module (@modules) {
-        my $version = $target->requirements_for_module($module);
-        next unless defined $version;
-        next unless $version =~ /^[0-9._]+$/;
-        next unless $requires->accepts_module($module, $version);
-        $target->clear_requirement($module);
-      }
-    }
-    for my $feature (values %{$self->{features} || {}}) {
-      my $feature_prereqs = $feature->{prereqs};
-      for my $type (qw/requires recommends suggests/) {
-        my $target = $feature_prereqs->requirements_for($phase, $type);
-        for my $module (@modules) {
-          my $version = $target->requirements_for_module($module);
-          next unless defined $version;
-          next unless $version =~ /^[0-9._]+$/;
-          next unless $requires->accepts_module($module, $version);
-          $target->clear_requirement($module);
-        }
-      }
-    }
-  }
+
+  my %features = map {$_ => $self->{features}{$_}{prereqs}} keys %{$self->{features} || {}};
+
+  dedupe_prereqs_and_features($prereqs, \%features);
 }
 
 sub _scan_dir {

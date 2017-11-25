@@ -164,4 +164,18 @@ feature 'foo', 'foo' => sub {
 };
 CPANFILE
 
+test_cpanfile('keep version', sub {
+  my $tmpdir = shift;
+
+  test_file("$tmpdir/MyTest.pm", <<'END');
+use Foo;
+END
+
+  test_file("$tmpdir/cpanfile", <<'END');
+requires 'Foo', '1.05';
+END
+}, {}, <<'CPANFILE');
+requires 'Foo', '1.05';
+CPANFILE
+
 done_testing;
