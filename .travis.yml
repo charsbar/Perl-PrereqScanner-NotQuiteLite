@@ -11,6 +11,4 @@ perl:
   - 5.24
   - 5.26
 before_install:
-  - cpanm -n ExtUtils::MakeMaker::CPANfile CPAN::Meta
-install:
-  - cpanm --quiet --with-recommends --with-suggests --installdeps --notest .
+  - cpanm -n ExtUtils::MakeMaker::CPANfile
