@@ -1,5 +1,5 @@
 requires 'CPAN::Meta::Prereqs', '2.150010';
-requires 'CPAN::Meta::Requirements', '2.150010';
+requires 'CPAN::Meta::Requirements', '2.140';
 requires 'Exporter', '5.57';
 requires 'Module::CPANfile', '1.1002';
 requires 'Module::Find';
