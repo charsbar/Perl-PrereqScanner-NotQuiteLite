@@ -1822,7 +1822,7 @@ sub _scan_re {
 
     if ($c1 eq '{') {
       # quantifier shouldn't be nested
-      if ($$rstr =~ m/\G({[0-9]+(?:,(?:[0-9]+)?)?})/gcs) {
+      if ($$rstr =~ m/\G(\{[0-9]+(?:,(?:[0-9]+)?)?})/gcs) {
         _debug(" quantifier $1") if DEBUG_RE;
         next;
       }
