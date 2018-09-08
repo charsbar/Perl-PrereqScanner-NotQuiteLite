@@ -2087,13 +2087,13 @@ _debug("NO TOKENS: ".(Data::Dump::dump($tokens))) if DEBUG;
 
   my $c1 = substr($name, 0, 1);
   if ($c1 eq '5') {
-    $c->add(perl => $name);
+    $c->add_no(perl => $name);
     return;
   }
   if ($c1 eq 'v') {
     my $c2 = substr($name, 1, 1);
     if ($c2 eq '5') {
-      $c->add(perl => $name);
+      $c->add_no(perl => $name);
       return;
     }
     if ($c2 eq '6') {
@@ -2110,10 +2110,10 @@ _debug("NO TOKENS: ".(Data::Dump::dump($tokens))) if DEBUG;
     my $maybe_version_token = $tokens->[0];
     my $maybe_version_token_desc = $maybe_version_token->[1];
     if ($maybe_version_token_desc and ($maybe_version_token_desc eq 'NUMBER' or $maybe_version_token_desc eq 'VERSION_STRING')) {
-      $c->add($name => $maybe_version_token->[0]);
+      $c->add_no($name => $maybe_version_token->[0]);
       shift @$tokens;
     } else {
-      $c->add($name => 0);
+      $c->add_no($name => 0);
     }
   }
 
