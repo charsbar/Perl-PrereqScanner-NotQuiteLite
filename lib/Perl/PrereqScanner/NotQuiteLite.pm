@@ -2143,7 +2143,9 @@ Perl::PrereqScanner::NotQuiteLite - a tool to scan your Perl code for its prereq
   );
   my $context = $scanner->scan_file('path/to/file');
   my $requirements = $context->requires;
+  my $recommends = $context->recommends;
   my $suggestions  = $context->suggests; # requirements in evals
+  my $noes = $context->noes;
 
 =head1 BACKWARD INCOMPATIBLILITY
 
@@ -2163,6 +2165,10 @@ L<Perl::PrereqScanner::Lite> (which uses an XS lexer).
 Perl::PrereqScanner::NotQuiteLite also recognizes C<eval>.
 Prerequisites in C<eval> are not considered as requirements, but you
 can collect them as suggestions.
+
+Conditional requirements or requirements loaded in a block are
+treated as recommends. Noed modules are stored separately (since 0.94).
+You may or may not need to merge them into requires.
 
 =head1 METHODS
 
