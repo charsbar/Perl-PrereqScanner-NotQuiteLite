@@ -22,15 +22,20 @@ our @DEFAULT_PARSERS = qw/Core Moose/;
 use constant DEBUG => !!$ENV{PERL_PSNQL_DEBUG} || 0;
 use constant DEBUG_RE => DEBUG > 3 ? 1 : 0;
 
+sub _debug {}
+sub _error {}
+sub _dump_stack {}
+
 if (DEBUG) {
   require Data::Dump; Data::Dump->import(qw/dump/);
-  sub _debug { print @_, "\n" }
-  sub _error { print @_, "*" x 50, "\n" }
-  sub _dump_stack {
+  no warnings 'redefine';
+  *_debug = sub { print @_, "\n" };
+  *_error = sub { print @_, "*" x 50, "\n" };
+  *_dump_stack = sub {
     my ($c, $char) = @_;
     my $stacked = join '', map {($_->[2] ? "($_->[2])" : '').$_->[0]} @{$c->{stack}};
     _debug("$char \t\t\t\t stacked: $stacked");
-  }
+  };
 }
 
 sub _match_error {
