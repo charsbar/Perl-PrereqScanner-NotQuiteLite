@@ -314,6 +314,20 @@ sub token_is_keyword {
   return 0;
 }
 
+sub register_keywords {
+  my ($self, @keywords) = @_;
+  for my $keyword (@keywords) {
+    $self->{defined_keywords}{$keyword} = 0;
+  }
+}
+
+sub remove_keywords {
+  my ($self, @keywords) = @_;
+  for my $keyword (@keywords) {
+    delete $self->{defined_keywords}{$keyword} if exists $self->{defined_keywords}{$keyword} and !$self->{defined_keywords}{$keyword};
+  }
+}
+
 sub register_sub_keywords {
   my ($self, @keywords) = @_;
   for my $keyword (@keywords) {
