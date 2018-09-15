@@ -1,5 +1,12 @@
 Revision history for Perl-PrereqScanner-NotQuiteLite
 
+0.95 2018/09/16
+  - added deep recursion protection
+  - support fully qualified Test::More::plan/done_testing
+  - Keyword::Declare support
+  - ignore internal package inheritance
+  - BEING { ... exit } support
+
 0.94 2018/09/08
   - noes are now stored separately
 
