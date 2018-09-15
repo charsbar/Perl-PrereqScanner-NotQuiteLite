@@ -8,6 +8,10 @@ use Perl::PrereqScanner::NotQuiteLite::Util;
 
 my %defined_keywords = _keywords();
 
+my %default_conditional_keywords = map {$_ => 1} qw(
+  if elsif unless else
+);
+
 my %default_expects_expr_block = map {$_ => 1} qw(
   if elsif unless given when
   for foreach while until
@@ -120,7 +124,7 @@ sub _optional {
       if (defined $requires->requirements_for_module($module) and
           $requires->accepts_module($module, $hash->{$module})
       ) {
-        $optional->clear_requirement($module);
+        $optional = $optional->clear_requirement($module);
       }
     }
   }
@@ -291,6 +295,14 @@ sub token_expects_word {
   return 1 if exists $default_expects_word{$token};
   return 0 if !exists $self->{expects_word};
   return 1 if exists $self->{expects_word}{$token};
+  return 0;
+}
+
+sub token_is_conditional {
+  my ($self, $token) = @_;
+  return 1 if exists $default_conditional_keywords{$token};
+  return 0 if !exists $self->{is_conditional_keyword};
+  return 1 if exists $self->{is_conditional_keyword}{$token};
   return 0;
 }
 
