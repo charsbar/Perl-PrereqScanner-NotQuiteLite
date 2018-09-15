@@ -47,7 +47,6 @@ sub _match_error {
 ### Global Variables To Be Sorted Out Later
 
 my %unsupported_packages = map {$_ => 1} qw(
-  Perl6::Attributes
 );
 
 my %sub_keywords = (
