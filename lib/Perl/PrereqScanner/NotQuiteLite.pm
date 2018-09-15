@@ -307,6 +307,11 @@ sub _skim_string {
 sub _scan {
   my ($self, $c, $rstr, $parent_scope) = @_;
 
+  if (@{$c->{stack}} > 90) {
+    _error("deep recursion found");
+    $c->{ended} = 1;
+  }
+
   _dump_stack($c, "BEGIN SCOPE") if DEBUG;
 
   # found __DATA|END__ somewhere?
