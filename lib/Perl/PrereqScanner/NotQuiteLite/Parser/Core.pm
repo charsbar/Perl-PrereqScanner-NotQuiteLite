@@ -11,6 +11,7 @@ sub register { return {
     parent => 'parse_parent_args',
   },
   keyword => {
+    package => 'parse_package',
     exit => 'parse_begin_exit',
   },
 }}
@@ -101,6 +102,20 @@ sub parse_begin_exit {
     } else {
       $c->{ended} = 1;
       @{$c->{stack}} = ();
+    }
+  }
+}
+
+sub parse_package {
+  my ($class, $c, $raw_tokens) = @_;
+
+  my $tokens = convert_string_tokens($raw_tokens);
+  shift @$tokens; # drop "package"
+  my $package;
+  for my $token (@$tokens) {
+    if (ref $token && $token->[1] eq 'WORD') {
+      $c->add_package($token->[0]);
+      last;
     }
   }
 }

@@ -325,6 +325,26 @@ sub enables_utf8 {
   exists $enables_utf8{$module} ? 1 : 0;
 }
 
+sub add_package {
+  my ($self, $package) = @_;
+  $self->{packages}{$package} = 1;
+}
+
+sub packages {
+  my $self = shift;
+  keys %{$self->{packages} || {}};
+}
+
+sub remove_inner_packages_from_requirements {
+  my $self = shift;
+  for my $package ($self->packages) {
+    for my $rel (qw/requires recommends suggests noes/) {
+      next unless $self->{$rel};
+      $self->{$rel} = $self->{$rel}->clear_requirement($package);
+    }
+  }
+}
+
 sub _keywords {(
     '__FILE__' => 1,
     '__LINE__' => 2,

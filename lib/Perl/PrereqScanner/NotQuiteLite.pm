@@ -284,6 +284,8 @@ sub scan_string {
     push @{$c->{errors}}, Data::Dump::dump($c->{stack});
   }
 
+  $c->remove_inner_packages_from_requirements;
+
   $c;
 }
 
