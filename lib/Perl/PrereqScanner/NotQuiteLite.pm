@@ -1394,23 +1394,6 @@ sub _scan {
         }
         $stack = undef;
       }
-      if ($unstack and @{$c->{stack}}) {
-        my $stacked = pop @{$c->{stack}};
-        my $stacked_type = substr($stacked->[0], -1);
-        if (
-          ($unstack eq '}' and $stacked_type ne '{') or
-          ($unstack eq ']' and $stacked_type ne '[') or
-          ($unstack eq ')' and $stacked_type ne '(')
-        ) {
-          my $prev_pos = $stacked->[1] || 0;
-          die "mismatch $stacked_type $unstack\n" .
-              substr($$rstr, $prev_pos, pos($$rstr) - $prev_pos);
-        }
-        _dump_stack($c, $unstack) if DEBUG;
-        $current_scope |= F_SCOPE_END;
-        $unstack = undef;
-      }
-
       if ($current_scope & F_SENTENCE_END) {
         if (($current_scope & F_KEEP_TOKENS) and @tokens) {
           my $first_token = $tokens[0][0];
@@ -1482,6 +1465,22 @@ sub _scan {
         $caller_package = undef;
         $token = $token_type = '';
         _debug('END SENTENSE') if DEBUG;
+      }
+      if ($unstack and @{$c->{stack}}) {
+        my $stacked = pop @{$c->{stack}};
+        my $stacked_type = substr($stacked->[0], -1);
+        if (
+          ($unstack eq '}' and $stacked_type ne '{') or
+          ($unstack eq ']' and $stacked_type ne '[') or
+          ($unstack eq ')' and $stacked_type ne '(')
+        ) {
+          my $prev_pos = $stacked->[1] || 0;
+          die "mismatch $stacked_type $unstack\n" .
+              substr($$rstr, $prev_pos, pos($$rstr) - $prev_pos);
+        }
+        _dump_stack($c, $unstack) if DEBUG;
+        $current_scope |= F_SCOPE_END;
+        $unstack = undef;
       }
 
       last if $current_scope & F_SCOPE_END;
