@@ -124,7 +124,7 @@ sub _optional {
       if (defined $requires->requirements_for_module($module) and
           $requires->accepts_module($module, $hash->{$module})
       ) {
-        $optional = $optional->clear_requirement($module);
+        $optional->clear_requirement($module);
       }
     }
   }
@@ -366,7 +366,7 @@ sub remove_inner_packages_from_requirements {
   for my $package ($self->packages) {
     for my $rel (qw/requires recommends suggests noes/) {
       next unless $self->{$rel};
-      $self->{$rel} = $self->{$rel}->clear_requirement($package);
+      $self->{$rel}->clear_requirement($package);
     }
   }
 }
