@@ -249,12 +249,18 @@ sub _scan_file {
     }
   }
 
-  if ($relpath =~ m!(?:^|[\\/])(?:Makefile|Build)\.PL$!) {
-    $self->_add($prereqs, configure => $context);
-  } elsif ($relpath =~ m!(?:^|[\\/])t[\\/]!) {
-    $self->_add($prereqs, test => $context);
+  if ($relpath =~ m!(?:^|[\\/])t[\\/]!) {
+    if ($relpath =~ /\.t$/) {
+      $self->_add($prereqs, test => $context);
+    } elsif ($relpath =~ /\.pm$/) {
+      $self->{_test_pm}{$relpath} = $context;
+    }
   } elsif ($relpath =~ m!(?:^|[\\/])(?:xt|inc|author)[\\/]!) {
     $self->_add($prereqs, develop => $context);
+  } elsif ($relpath =~ m!(?:(?:^|[\\/])Makefile|^Build)\.PL$!) {
+    $self->_add($prereqs, configure => $context);
+  } elsif ($relpath =~ m!(?:^|[\\/])(?:.+)\.PL$!) {
+    $self->_add($prereqs, build => $context);
   } else {
     $self->_add($prereqs, runtime => $context);
   }
