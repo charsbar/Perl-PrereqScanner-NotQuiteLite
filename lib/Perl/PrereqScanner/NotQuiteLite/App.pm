@@ -72,6 +72,22 @@ sub run {
     next;
   }
 
+  # add test requirements by .pm files used in .t files
+  if (my $test_reqs = $self->{prereqs}->requirements_for('test', 'requires')) {
+    my @required_modules = $test_reqs->required_modules;
+    for my $module (@required_modules) {
+      my $relpath = $self->{possible_modules}{$module} or next;
+      my $context = $self->{_test_pm}{$relpath} or next;
+      $test_reqs->add_requirements($context->requires);
+      if ($self->{recommends} or $self->{suggests}) {
+        $self->{prereqs}->requirements_for('test', 'recommends')->add_requirements($context->recommends);
+      }
+      if ($self->{suggests}) {
+        $self->{prereqs}->requirements_for('test', 'suggests')->add_requirements($context->suggests);
+      }
+    }
+  }
+
   $self->_exclude_local_modules;
 
   if ($self->{exclude_core}) {
@@ -269,11 +285,11 @@ sub _scan_file {
     my $module = $relpath;
     $module =~ s!\.pm$!!;
     $module =~ s![\\/]!::!g;
-    $self->{possible_modules}{$module} = 1;
+    $self->{possible_modules}{$module} = $relpath;
     $module =~ s!^(?:inc|blib|x?t)::!!;
-    $self->{possible_modules}{$module} = 1;
+    $self->{possible_modules}{$module} = $relpath;
     $module =~ s!^lib::!!;
-    $self->{possible_modules}{$module} = 1;
+    $self->{possible_modules}{$module} = $relpath;
   }
 }
 
