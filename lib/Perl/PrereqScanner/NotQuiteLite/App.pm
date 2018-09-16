@@ -170,22 +170,33 @@ sub _exclude_local_modules {
 sub _exclude_core_prereqs {
   my $self = shift;
 
-  my $perl_version = $self->{perl_version} || '5.008001';
-  if ($perl_version =~ /^v?5\.([1-9][0-9]?)(?:\.([0-9]))?$/) {
+  my $perl_version = $self->{perl_version} || $self->_find_used_perl_version || '5.008001';
+  if ($perl_version =~ /^v?5\.(0?[1-9][0-9]?)(?:\.([0-9]))?$/) {
     $perl_version = sprintf '5.%03d%03d', $1, $2 || 0;
   }
   $perl_version = '5.008001' unless exists $Module::CoreList::version{$perl_version};
 
   for my $req ($self->_requirements) {
     for my $module ($req->required_modules) {
-      if (Module::CoreList::is_core($module) and
-          !Module::CoreList::deprecated_in($module)
+      if (Module::CoreList::is_core($module, undef, $perl_version) and
+          !Module::CoreList::deprecated_in($module, undef, $perl_version)
       ) {
         my $core_version = $Module::CoreList::version{$perl_version}{$module} or next;
         $req->clear_requirement($module) if $req->accepts_module($module => $core_version);
       }
     }
   }
+}
+
+sub _find_used_perl_version {
+  my $self = shift;
+  my @perl_versions;
+  my $perl_requirements = CPAN::Meta::Requirements->new;
+  for my $req ($self->_requirements) {
+    my $perl_req = $req->requirements_for_module('perl');
+    $perl_requirements->add_string_requirement('perl', $perl_req) if $perl_req;
+  }
+  return $perl_requirements->is_simple ? $perl_requirements->requirements_for_module('perl') : undef;
 }
 
 sub _dedupe {
