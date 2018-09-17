@@ -61,6 +61,16 @@ use Foo;
 END
 }, {exclude_core => 1}, { runtime => { requires => { Foo => 0 }}});
 
+test_app('do not ignore better core modules', sub {
+  my $tmpdir = shift;
+
+  test_file("$tmpdir/MyTest.pm", <<'END');
+use strict;
+use warnings;
+use Exporter 5.57;
+END
+}, {exclude_core => 1}, { runtime => { requires => { Exporter => '5.57' }}});
+
 test_app('ignore core modules for higher perl version', sub {
   my $tmpdir = shift;
 
