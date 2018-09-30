@@ -61,6 +61,9 @@ sub run {
       push @args, "bin", "script", "scripts";
     }
 
+    # extra libs
+    push @args, @{$self->{libs} || []};
+
     # for develop requires
     push @args, "xt", "author" if $self->{develop};
   }
@@ -156,24 +159,25 @@ sub _requirements {
 sub _exclude_local_modules {
   my $self = shift;
 
-  my $inc_dir = File::Spec->catdir($self->{base_dir}, "inc");
-  if (-d $inc_dir) {
+  my @local_dirs = ("inc", @{$self->{libs} || []});
+  for my $dir (@local_dirs) {
+    my $local_dir = File::Spec->catdir($self->{base_dir}, $dir);
+    next unless -d $local_dir;
     find({
       wanted => sub {
         my $file = $_;
         return unless -f $file;
-        my $relpath = File::Spec->abs2rel($file, $self->{base_dir});
+        my $relpath = File::Spec->abs2rel($file, $local_dir);
 
         return unless $relpath =~ /\.pm$/;
         my $module = $relpath;
         $module =~ s!\.pm$!!;
         $module =~ s![\\/]!::!g;
         $self->{possible_modules}{$module} = 1;
-        $module =~ s!^inc::!!g;
-        $self->{possible_modules}{$module} = 1;
+        $self->{possible_modules}{"inc::$module"} = 1 if $dir eq 'inc';
       },
       no_chdir => 1,
-    }, $inc_dir);
+    }, $local_dir);
   }
 
   for my $req ($self->_requirements) {
