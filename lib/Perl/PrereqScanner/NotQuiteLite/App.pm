@@ -94,7 +94,6 @@ sub run {
   $self->_exclude_local_modules;
 
   if ($self->{exclude_core}) {
-    eval { require Module::CoreList; Module::CoreList->VERSION('2.99') } or die "requires Module::CoreList 2.99";
     $self->_exclude_core_prereqs;
   }
 
@@ -189,6 +188,8 @@ sub _exclude_local_modules {
 
 sub _exclude_core_prereqs {
   my $self = shift;
+
+  eval { require Module::CoreList; Module::CoreList->VERSION('2.99') } or die "requires Module::CoreList 2.99";
 
   my $perl_version = $self->{perl_version} || $self->_find_used_perl_version || '5.008001';
   if ($perl_version =~ /^v?5\.(0?[1-9][0-9]?)(?:\.([0-9]))?$/) {
