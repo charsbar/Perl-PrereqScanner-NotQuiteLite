@@ -16,6 +16,7 @@ GetOptions(\my %opts, qw/
   save-cpanfile
   exclude-core
   perl-version=s
+  allow-test-pms
   features=s
   base-dir=s
   recommends
