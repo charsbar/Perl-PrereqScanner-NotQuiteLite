@@ -15,6 +15,7 @@ on configure => sub {
 };
 
 on test => sub {
+    requires 'Test::FailWarnings';
     requires 'Test::More', '0.98';
     requires 'Test::UseAllModules', '0.17';
 };
