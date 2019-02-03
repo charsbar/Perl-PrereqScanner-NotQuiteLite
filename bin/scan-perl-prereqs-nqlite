@@ -25,6 +25,7 @@ GetOptions(\my %opts, qw/
   suggests
   develop
   blib
+  use_index|use-index=s
 /);
 
 if ($opts{version}) {
@@ -134,6 +135,10 @@ useful when your distribution has a set of OS-specific modules, for example.
 
 You can also specify a regexp instead of a list of paths. If this is
 set, C<ignore> options are ignored.
+
+=item use_index
+
+You can specify an index name of CPAN::Common::Index module (such as "Mirror" or "MetaDB") not to list all the modules of a required distribution.
 
 =item blib
 
