@@ -50,6 +50,7 @@ t/20_parsers.t
 t/aliased.t
 t/app/basic.t
 t/app/cpanfile.t
+t/app/use_index.t
 t/autouse.t
 t/begin_exit.t
 t/catalyst.t
@@ -118,3 +119,4 @@ t/unless.t
 t/Util.pm
 xt/99_pod.t
 xt/bundle.t
+xt/cpanfile.t
