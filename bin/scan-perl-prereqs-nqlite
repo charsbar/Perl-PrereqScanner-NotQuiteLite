@@ -21,6 +21,8 @@ GetOptions(\my %opts, qw/
   base_dir|base-dir=s
   ignore_re|ignore-re=s
   ignore=s@
+  private_re|private-re=s
+  private=s@
   recommends
   suggests
   develop
@@ -135,6 +137,19 @@ useful when your distribution has a set of OS-specific modules, for example.
 
 You can also specify a regexp instead of a list of paths. If this is
 set, C<ignore> options are ignored.
+
+=item private
+
+Set a list of modules C<scan-perl-prereqs-nqlite> should consider
+private, that is, that are not uploaded to the CPAN. Contrary to
+the C<ignore> option, which makes the scanner skip scanning the
+file, this option lets the scanner scan files, and excludes matched
+prerequisites afterwards.
+
+=item private_re
+
+You can also specify a regexp instead of a list of modules. If this
+is set, C<private> options are ignored.
 
 =item use_index
 
