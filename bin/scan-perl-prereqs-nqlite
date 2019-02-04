@@ -10,7 +10,7 @@ use Getopt::Long;
 use Pod::Usage;
 
 GetOptions(\my %opts, qw/
-  lib|I=s@
+  inc|lib|I=s@
   parsers|parser=s@
   version
   help
@@ -43,7 +43,7 @@ if ($opts{help}) {
   exit;
 }
 
-lib->import(@{$opts{lib}}) if $opts{lib};
+lib->import(@{$opts{inc}}) if $opts{inc};
 
 for my $key (keys %opts) {
   next unless $key =~ /\-/;
@@ -173,6 +173,11 @@ script before you run C<scan-perl-prereqs-nqlite>.
 Set a list of parsers (or parser tags) C<scan-perl-prereqs-nqlite>
 uses. If this option is not set, the scanner uses C<:installed>
 parsers by default.
+
+=item inc
+
+Add a list of additional @INC path C<scan-perl-prereqs-nqlite>
+looks for private parsers.
 
 =back
 
