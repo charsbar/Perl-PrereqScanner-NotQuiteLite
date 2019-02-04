@@ -9,6 +9,7 @@ use Pod::Usage;
 
 GetOptions(\my %opts, qw/
   lib|I=s@
+  parsers|parser=s@
   version
   help
   json
@@ -164,6 +165,12 @@ some uncommon places and/or some of them are listed in C<no_index>.
 However, files in C<blib> may be older than the ones under C<lib>
 etc, and you need to update them by running a make or a C<Build>
 script before you run C<scan-perl-prereqs-nqlite>.
+
+=item parser
+
+Set a list of parsers (or parser tags) C<scan-perl-prereqs-nqlite>
+uses. If this option is not set, the scanner uses C<:installed>
+parsers by default.
 
 =back
 
