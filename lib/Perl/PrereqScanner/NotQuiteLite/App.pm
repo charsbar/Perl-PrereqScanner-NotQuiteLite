@@ -35,14 +35,20 @@ sub new {
 
   $opts{cpanfile} = 1 if $opts{save_cpanfile};
 
-  if ($opts{features} and !ref $opts{features}) {
+  if ($opts{features} and ref $opts{features} ne 'HASH') {
+    my @features;
+    if (!ref $opts{features}) {
+      @features = split ';', $opts{features};
+    } elsif (ref $opts{features} eq 'ARRAY') {
+      @features = @{$opts{features}};
+    }
     my %map;
-    for my $spec (split ';', $opts{features}) {
+    for my $spec (@features) {
       my ($identifier, $description, $paths) = split ':', $spec;
       $map{$identifier} = {
         description => $description,
         paths => [split ',', $paths],
-      }
+      };
     }
     $opts{features} = \%map;
   }

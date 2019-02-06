@@ -21,7 +21,7 @@ GetOptions(\my %opts, qw/
   exclude_core|exclude-core
   perl_version|perl-version=s
   allow_test_pms|allow-test-pms
-  features=s
+  features|feature=s@
   base_dir|base-dir=s
   ignore_re|ignore-re=s
   ignore=s@
