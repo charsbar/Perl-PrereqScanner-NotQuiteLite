@@ -135,6 +135,28 @@ feature 'foo', 'foo' => sub {
 };
 CPANFILE
 
+test_cpanfile('exclude_core and feature', sub {
+  my $tmpdir = shift;
+
+  test_file("$tmpdir/MyTest.pm", <<'END');
+use strict;
+use warnings;
+use Foo;
+END
+
+  test_file("$tmpdir/MyTest2.pm", <<'END');
+use strict;
+use warnings;
+use Test::More;
+use Bar;
+END
+}, {features => 'foo:foo:MyTest2.pm', exclude_core => 1}, <<'CPANFILE');
+requires 'Foo';
+feature 'foo', 'foo' => sub {
+    requires 'Bar';
+};
+CPANFILE
+
 test_cpanfile('x_phase', sub {
   my $tmpdir = shift;
   my $tmpfile = "$tmpdir/MyTest.pm";

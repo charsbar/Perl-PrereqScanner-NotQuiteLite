@@ -186,6 +186,20 @@ sub _requirements {
       push @requirements, $req;
     }
   }
+
+  if ($self->{features}) {
+    my @feature_prereqs = grep defined, map {$self->{features}{$_}{prereqs}} keys %{$self->{features} || {}};
+    for my $feature_prereqs (@feature_prereqs) {
+      for my $phase (@phases) {
+        for my $type (@types) {
+          my $req = $feature_prereqs->requirements_for($phase, $type);
+          next unless $req->required_modules;
+          push @requirements, $req;
+        }
+      }
+    }
+  }
+
   @requirements;
 }
 
