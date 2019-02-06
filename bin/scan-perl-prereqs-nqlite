@@ -161,6 +161,14 @@ Set a list of extra paths C<scan-perl-prereqs-nqlite> should also
 scan. This is useful when your application/distribution uses an
 untraditional file layout.
 
+=item feature
+
+  scan-perl-prereqs-nqlite \
+    --feature name:description:lib/My/Plugin/For/SpecificOS \
+    --feature name:description:web/lib,web/bin
+
+Specify a feature name, a description, and matching paths.
+
 =item use_index
 
 You can specify an index name of CPAN::Common::Index module (such as "Mirror" or "MetaDB") not to list all the modules of a required distribution.
