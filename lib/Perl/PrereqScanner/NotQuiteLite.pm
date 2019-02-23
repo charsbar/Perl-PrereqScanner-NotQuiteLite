@@ -2289,18 +2289,13 @@ Perl::PrereqScanner::NotQuiteLite - a tool to scan your Perl code for its prereq
   my $scanner = Perl::PrereqScanner::NotQuiteLite->new(
     parsers => [qw/:installed -UniversalVersion/],
     suggests => 1,
+    perl_minimum_version => 1,
   );
   my $context = $scanner->scan_file('path/to/file');
   my $requirements = $context->requires;
   my $recommends = $context->recommends;
   my $suggestions  = $context->suggests; # requirements in evals
   my $noes = $context->noes;
-
-=head1 BACKWARD INCOMPATIBLILITY
-
-As of 0.49_01, the internal of this module was completely rewritten.
-I'm supposing there's no one who has written their own parsers for
-the previous version, but if this assumption was wrong, let me know.
 
 =head1 DESCRIPTION
 
@@ -2319,6 +2314,11 @@ Conditional requirements or requirements loaded in a block are
 treated as recommends. Noed modules are stored separately (since 0.94).
 You may or may not need to merge them into requires.
 
+Perl::PrereqScanner::NotQuiteLite can also recognize some of
+the new language features such as C<say>, subroutine signatures,
+and postfix dereferences, to improve the minimum perl requirement
+(since 0.9905).
+
 =head1 METHODS
 
 =head2 new
@@ -2335,9 +2335,10 @@ plus modules loaded by a few common modules such as C<base>,
 C<parent>, C<if> (that are in the Perl core), and by two keywords
 exported by L<Moose> family (C<extends> and C<with>).
 
-If you need more, you can pass extra parser names to the scanner, or
-C<:installed>, which loads and registers all the installed parsers
-under C<Perl::PrereqScanner::NotQuiteLite::Parser> namespace.
+If you need more, you can pass extra parser names to the scanner,
+or C<:bundled>, which loads and registers all the parsers bundled
+with this distribution. If you have your own parsers, you can
+specify C<:installed> to load and register all the installed parsers.
 
 You can also pass a project-specific parser (that lies outside the 
 C<Perl::PrereqScanner::NotQuiteLite::Parser> namespace) by
@@ -2358,6 +2359,19 @@ C<eval> by default. If you set this option to true,
 Perl::PrereqScanner::NotQuiteLite also parses statements in C<eval>,
 and records requirements as suggestions.
 
+=item recommends
+
+Perl::PrereqScanner::NotQuiteLite usually ignores C<require>-like
+statements in a block by default. If you set this option to true,
+Perl::PrereqScanner::NotQuiteLite also records requirements in
+a block as recommendations.
+
+=item perl_minimum_version
+
+If you set this option to true, Perl::PrereqScanner::NotQuiteLite
+adds a specific version of perl as a requirement when it finds
+some of the new perl language features.
+
 =back
 
 =head2 scan_file
@@ -2371,6 +2385,10 @@ takes a string, scans and returns a ::Context object.
 =head1 SEE ALSO
 
 L<Perl::PrereqScanner>, L<Perl::PrereqScanner::Lite>, L<Module::ExtractUse>
+
+L<Perl::PrereqScanner::NotQuiteLite::App> to scan a whole distribution.
+
+L<scan-perl-prereqs-nqlite> is a command line interface of the above.
 
 =head1 AUTHOR
 
