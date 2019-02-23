@@ -28,7 +28,7 @@ sub new {
   }
 
   $opts{prereqs} = CPAN::Meta::Prereqs->new;
-  $opts{parsers} = [':installed'] unless defined $opts{parsers};
+  $opts{parsers} = [':bundled'] unless defined $opts{parsers};
   $opts{recommends} = 0 unless defined $opts{recommends};
   $opts{suggests} = 0 unless defined $opts{suggests};
   $opts{base_dir} ||= File::Spec->curdir;
