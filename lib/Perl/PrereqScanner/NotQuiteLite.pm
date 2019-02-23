@@ -865,7 +865,13 @@ sub _scan {
     } elsif ($c1 eq '(') {
       my $prototype_re = $c->prototype_re;
       if ($waiting_for_a_block and @keywords and $c->token_defines_sub($keywords[-1]) and $$rstr =~ m{$prototype_re}gc) {
-        ($token, $token_desc, $token_type) = ($1, '(PROTOTYPE)', '');
+        my $proto = $1;
+        if ($proto =~ /^\([\\\$\@\%\&\[\]\*;\+]*\)$/) {
+          ($token, $token_desc, $token_type) = ($proto, '(PROTOTYPE)', '');
+        } else {
+          ($token, $token_desc, $token_type) = ($proto, '(SIGNATURES)', '');
+          $c->add_perl('5.020', 'signatures');
+        }
         next;
       } elsif ($$rstr =~ m{\G\(((?:$re_nonblock_chars)(?<!\$))\)}gc) {
         ($token, $token_desc, $token_type) = ([[[$1, 'TERM']]], '()', 'TERM');
@@ -971,7 +977,7 @@ sub _scan {
         next;
       }
       if ($waiting_for_a_block and @keywords and $c->token_defines_sub($keywords[-1])) {
-        while($$rstr =~ m{\G(:?[\w\s]+)}gcs) {
+        while($$rstr =~ m{\G\s*(:?\s*[\w]+)}gcs) {
           my $startpos = pos($$rstr);
           if (substr($$rstr, $startpos, 1) eq '(') {
             my @nest = '(';
@@ -997,7 +1003,11 @@ sub _scan {
             }
           }
         }
-        ($token, $token_desc, $token_type) = (substr($$rstr, $pos, pos($$rstr) - $pos), 'ATTRIBUTE', '');
+        $token = substr($$rstr, $pos, pos($$rstr) - $pos);
+        ($token_desc, $token_type) = ('ATTRIBUTE', '');
+        if ($token =~ /^:prototype\(/) {
+          $c->add_perl('5.020', ':prototype');
+        }
         next;
       } else {
         pos($$rstr) = $pos + 1;
