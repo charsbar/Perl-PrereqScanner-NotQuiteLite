@@ -67,6 +67,9 @@ sub new {
   if ($args{suggests}) {
     $context{suggests} = CPAN::Meta::Requirements->new;
   }
+  if ($args{perl_minimum_version}) {
+    $context{perl} = CPAN::Meta::Requirements->new;
+  }
   for my $type (qw/use no method keyword sub/) {
     if (exists $args{_}{$type}) {
       for my $key (keys %{$args{_}{$type}}) {
@@ -149,6 +152,13 @@ sub add_conditional {
 
 sub add_no {
   shift->_add('noes', @_);
+}
+
+sub add_perl {
+  my ($self, $perl, $reason) = @_;
+  return unless $self->{perl};
+  $self->_add('perl', 'perl', $perl);
+  $self->{perl_minimum_version}{$reason} = $perl;
 }
 
 sub _add {
@@ -368,6 +378,18 @@ sub remove_inner_packages_from_requirements {
       next unless $self->{$rel};
       $self->{$rel}->clear_requirement($package);
     }
+  }
+}
+
+sub merge_perl {
+  my $self = shift;
+  return unless $self->{perl};
+
+  my $perl = $self->{requires}->requirements_for_module('perl');
+  if ($self->{perl}->accepts_module('perl', $perl)) {
+    delete $self->{perl_minimum_version};
+  } else {
+    $self->add(perl => $self->{perl}->requirements_for_module('perl'));
   }
 }
 
