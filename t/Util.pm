@@ -9,7 +9,7 @@ use Exporter qw/import/;
 use File::Temp qw/tempdir/;
 use File::Basename qw/dirname/;
 use File::Path qw/mkpath rmtree/;
-use if -d ".git", "Test::FailWarnings";
+use if (-d ".git" and !$ENV{PERL_PSNQL_DEBUG}), "Test::FailWarnings";
 
 our @EXPORT = qw/
   test todo_test used test_app test_file test_cpanfile test_bin

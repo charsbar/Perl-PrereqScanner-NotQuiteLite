@@ -5,7 +5,7 @@ use warnings;
 use Test::More;
 use Perl::PrereqScanner::NotQuiteLite;
 use Exporter qw/import/;
-use if -d ".git", "Test::FailWarnings";
+use if (-d ".git" and !$ENV{PERL_PSNQL_DEBUG}), "Test::FailWarnings";
 
 our @EXPORT = (@Test::More::EXPORT, qw/test todo_test test_with_error/);
 
