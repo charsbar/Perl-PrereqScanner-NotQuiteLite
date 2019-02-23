@@ -1352,9 +1352,13 @@ sub _scan {
           next;
         }
       } elsif ($c->token_is_keyword($token) and ($prev_token_type ne 'KEYWORD' or !$c->token_expects_word($prev_token) or ($prev_token eq 'sub' and $token eq 'BEGIN'))) {
-        ($token_desc, $token_type) = ('KEYWORD', 'KEYWORD');
-        $c->check_new_keyword($token);
-        push @keywords, $token unless $token eq 'undef';
+        if ($c->token_is_op_keyword($token)) {
+          ($token_desc, $token_type) = ($token, 'OP');
+        } else {
+          ($token_desc, $token_type) = ('KEYWORD', 'KEYWORD');
+          $c->check_new_keyword($token);
+          push @keywords, $token unless $token eq 'undef';
+        }
       } else {
         if ($c1 eq 'v' and $token =~ /^v(?:0|[1-9][0-9]*)$/) {
           if ($$rstr =~ m{\G((?:\.[0-9][0-9_]*)+)}gc) {

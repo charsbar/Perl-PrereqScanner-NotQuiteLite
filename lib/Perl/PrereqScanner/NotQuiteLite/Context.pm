@@ -8,6 +8,10 @@ use Perl::PrereqScanner::NotQuiteLite::Util;
 
 my %defined_keywords = _keywords();
 
+my %default_op_keywords = map {$_ => 1} qw(
+  x eq ne and or xor cmp ge gt le lt not
+);
+
 my %default_conditional_keywords = map {$_ => 1} qw(
   if elsif unless else
 );
@@ -332,6 +336,14 @@ sub token_is_keyword {
   return 0;
 }
 
+sub token_is_op_keyword {
+  my ($self, $token) = @_;
+  return 1 if exists $default_op_keywords{$token};
+  return 0 if !exists $self->{defined_op_keywords};
+  return 1 if exists $self->{defined_op_keywords}{$token};
+  return 0;
+}
+
 sub check_new_keyword {
   my ($self, $token) = @_;
   if (exists $new_keyword_since{$token}) {
@@ -343,6 +355,13 @@ sub register_keywords {
   my ($self, @keywords) = @_;
   for my $keyword (@keywords) {
     $self->{defined_keywords}{$keyword} = 0;
+  }
+}
+
+sub register_op_keywords {
+  my ($self, @keywords) = @_;
+  for my $keyword (@keywords) {
+    $self->{defined_op_keywords}{$keyword} = 0;
   }
 }
 
