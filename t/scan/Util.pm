@@ -7,7 +7,14 @@ use Perl::PrereqScanner::NotQuiteLite;
 use Exporter qw/import/;
 use if -d ".git", "Test::FailWarnings";
 
-our @EXPORT = (@Test::More::EXPORT, qw/test test_with_error/);
+our @EXPORT = (@Test::More::EXPORT, qw/test todo_test test_with_error/);
+
+sub todo_test {
+  SKIP: {
+    local $TODO = "FIXME";
+    test(@_);
+  }
+}
 
 sub test {
   my $string = shift;
