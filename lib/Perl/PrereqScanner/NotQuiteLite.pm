@@ -1815,7 +1815,8 @@ sub _match_heredoc {
 
   my $startpos = pos($$rstr) || 0;
 
-  $$rstr =~ m{\G(<<\s*)}gc;
+  $$rstr =~ m{\G(?:<<(~)?\s*)}gc;
+  my $indent = $1 ? "\\s*" : "";
 
   my $label;
   if ($$rstr =~ m{\G([A-Za-z_]\w*)}gc) {
@@ -1833,7 +1834,7 @@ sub _match_heredoc {
   my $extrapos = pos($$rstr);
   $$rstr =~ m{\G.*\n}gc;
   my $str1pos = pos($$rstr)--;
-  unless ($$rstr =~ m{\G.*?\n(?=\Q$label\E\n)}gcs) {
+  unless ($$rstr =~ m{\G.*?\n$indent(?=\Q$label\E\n)}gcs) {
     return _match_error($rstr, qq{Missing here doc terminator ('$label')});
   }
   my $ldpos = pos($$rstr);
@@ -1847,6 +1848,9 @@ sub _match_heredoc {
   ];
   substr($$rstr, $str1pos, $ld2pos - $str1pos) = '';
   pos($$rstr) = $extrapos;
+  if ($indent) {
+    $c->add_perl('5.026', '<<~');
+  }
   return $heredoc;
 }
 
