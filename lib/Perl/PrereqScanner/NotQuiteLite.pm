@@ -759,7 +759,8 @@ sub _scan {
           pos($$rstr) = $pos;
         }
       }
-      if (($prev_token_type eq '' or (!($current_scope & F_EXPR) and $prev_token_type eq 'WORD')) or ($prev_token_type eq 'KEYWORD' and @keywords and $prev_token eq $keywords[-1])) {
+      if (($prev_token_type eq '' or (!($current_scope & F_EXPR) and $prev_token_type eq 'WORD')) or ($prev_token_type eq 'KEYWORD' and @keywords and $prev_token eq $keywords[-1] and $regexp_may_follow{$prev_token})) {
+
         if (my $regexp = $self->_match_regexp0($c, $rstr, $pos)) {
           ($token, $token_desc, $token_type) = ($regexp, 'REGEXP', 'TERM');
           next;
