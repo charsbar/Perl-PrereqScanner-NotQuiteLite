@@ -378,4 +378,8 @@ test('%{^CAPTURE}', <<'END', {perl => '5.026'});
 %{^CAPTURE}
 END
 
+test('%{^CAPTURE_ALL}', <<'END', {perl => '5.026'});
+%{^CAPTURE_ALL}
+END
+
 done_testing;

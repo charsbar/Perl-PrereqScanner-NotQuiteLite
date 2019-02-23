@@ -431,7 +431,7 @@ sub _scan {
             $token_type = '';
             next;
           }
-        } elsif ($$rstr =~ m{\G(\$\{\^[A-Z]+\})}gc) {
+        } elsif ($$rstr =~ m{\G(\$\{\^[A-Z_]+\})}gc) {
           ($token, $token_desc, $token_type) = ($1, '${^NAME}', 'VARIABLE');
           if ($token eq '${^CAPTURE}' or $token eq '${^CAPTURE_ALL}') {
             $c->add_perl('5.026', '${^CAPTURE}');
@@ -477,7 +477,7 @@ sub _scan {
           if ($token eq '@{^CAPTURE}' or $token eq '@{^CAPTURE_ALL}') {
             $c->add_perl('5.026', '@{^CAPTURE}');
           }
-        } elsif ($$rstr =~ m{\G(\@\{\^[A-Z]+\})}gc) {
+        } elsif ($$rstr =~ m{\G(\@\{\^[A-Z_]+\})}gc) {
           ($token, $token_desc, $token_type) = ($1, '@{^NAME}', 'VARIABLE');
           if ($token eq '@{^CAPTURE}' or $token eq '@{^CAPTURE_ALL}') {
             $c->add_perl('5.026', '@{^CAPTURE}');
@@ -538,7 +538,7 @@ sub _scan {
       if ($c2 eq '{') {
         if ($$rstr =~ m{\G(\%\{[\w\s]+\})}gc) {
           ($token, $token_desc, $token_type) = ($1, '%{NAME}', 'VARIABLE');
-        } elsif ($$rstr =~ m{\G(\%\{\^[A-Z]+\})}gc) {
+        } elsif ($$rstr =~ m{\G(\%\{\^[A-Z_]+\})}gc) {
           ($token, $token_desc, $token_type) = ($1, '%{^NAME}', 'VARIABLE');
           if ($token eq '%{^CAPTURE}' or $token eq '%{^CAPTURE_ALL}') {
             $c->add_perl('5.026', '%{^CAPTURE}');
