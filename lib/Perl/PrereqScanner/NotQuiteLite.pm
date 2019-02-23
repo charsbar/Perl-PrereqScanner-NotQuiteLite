@@ -774,10 +774,12 @@ sub _scan {
         if (substr($$rstr, $pos + 2, 1) eq '=') {
           pos($$rstr) = $pos + 3;
           ($token, $token_desc, $token_type) = ('//=', '//=', 'OP');
+          $c->add_perl('5.010', '//=');
           next;
         } else {
           pos($$rstr) = $pos + 2;
           ($token, $token_desc, $token_type) = ('//', '//', 'OP');
+          $c->add_perl('5.010', '//');
           next;
         }
       }
