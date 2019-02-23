@@ -153,11 +153,18 @@ sub parse_package {
 
   my $tokens = convert_string_tokens($raw_tokens);
   shift @$tokens; # drop "package"
-  my $package;
-  for my $token (@$tokens) {
-    if (ref $token && $token->[1] && $token->[1] eq 'WORD') {
-      $c->add_package($token->[0]);
-      last;
+  my $token = shift @$tokens;
+  if (ref $token && $token->[1] && $token->[1] eq 'WORD') {
+    $c->add_package($token->[0]);
+  }
+  if (@$tokens) {
+    $token = shift @$tokens;
+    if (is_version($token)) {
+      $c->add_perl("5.012", "package PACKAGE VERSION");
+      $token = shift @$tokens;
+    }
+    if (ref $token && $token->[1] && $token->[1] =~ /^\{/) {
+      $c->add_perl("5.014", "package PACKAGE (VERSION) {}");
     }
   }
 }
