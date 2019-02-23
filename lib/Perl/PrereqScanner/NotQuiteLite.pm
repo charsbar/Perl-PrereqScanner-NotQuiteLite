@@ -660,6 +660,16 @@ sub _scan {
           $current_scope |= F_SCOPE_END;
         }
         next;
+      } elsif ($c2 eq '.') {
+        if (substr($$rstr, $pos + 2, 1) eq '=') {
+          pos($$rstr) = $pos + 3;
+          ($token, $token_desc, $token_type) = ('&.=', '&.=', 'OP');
+        } else {
+          pos($$rstr) = $pos + 2;
+          ($token, $token_desc, $token_type) = ('&.', '&.', 'OP');
+        }
+        $c->add_perl('5.022', '&.');
+        next;
       } elsif ($$rstr =~ m{\G(\&(?:$re_namespace))}gc) {
         ($token, $token_desc, $token_type) = ($1, '&NAME', 'TERM');
         next;
@@ -1076,6 +1086,16 @@ sub _scan {
         pos($$rstr) = $pos + 2;
         ($token, $token_desc, $token_type) = ('|=', '|=', 'OP');
         next;
+      } elsif ($c2 eq '.') {
+        if (substr($$rstr, $pos + 2, 1) eq '=') {
+          pos($$rstr) = $pos + 3;
+          ($token, $token_desc, $token_type) = ('|.=', '|.=', 'OP');
+        } else {
+          pos($$rstr) = $pos + 2;
+          ($token, $token_desc, $token_type) = ('|.', '|.', 'OP');
+        }
+        $c->add_perl('5.022', '|.');
+        next;
       } else {
         pos($$rstr) = $pos + 1;
         ($token, $token_desc, $token_type) = ($c1, $c1, 'OP');
@@ -1086,6 +1106,16 @@ sub _scan {
       if ($c2 eq '=') {
         pos($$rstr) = $pos + 2;
         ($token, $token_desc, $token_type) = ('^=', '^=', 'OP');
+        next;
+      } elsif ($c2 eq '.') {
+        if (substr($$rstr, $pos + 2, 1) eq '=') {
+          pos($$rstr) = $pos + 3;
+          ($token, $token_desc, $token_type) = ('^.=', '^.=', 'OP');
+        } else {
+          pos($$rstr) = $pos + 2;
+          ($token, $token_desc, $token_type) = ('^.', '^.', 'OP');
+        }
+        $c->add_perl('5.022', '^.');
         next;
       } else {
         pos($$rstr) = $pos + 1;
@@ -1108,6 +1138,11 @@ sub _scan {
       if ($c2 eq '~') {
         pos($$rstr) = $pos + 2;
         ($token, $token_desc, $token_type) = ('~~', '~~', 'OP');
+        next;
+      } elsif ($c2 eq '.') {
+        pos($$rstr) = $pos + 2;
+        ($token, $token_desc, $token_type) = ('~.', '~.', 'OP');
+        $c->add_perl('5.022', '~.');
         next;
       } else {
         pos($$rstr) = $pos + 1;
