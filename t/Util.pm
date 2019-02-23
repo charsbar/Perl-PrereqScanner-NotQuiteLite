@@ -30,6 +30,7 @@ sub test {
     my $scanner = Perl::PrereqScanner::NotQuiteLite->new(
       parsers => $PARSERS || [qw/:bundled/],
       suggests => $expected_suggests ? 1 : 0,
+      perl_minimum_version => ($ENV{PERL_PSNQL_MINVER} || 0),
     );
     ok my $context = $scanner->scan_string($string);
     if ($expected_requires) {
