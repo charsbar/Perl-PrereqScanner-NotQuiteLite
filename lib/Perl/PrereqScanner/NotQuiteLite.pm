@@ -404,6 +404,7 @@ sub _scan {
           if ($c3 eq '*') {
             pos($$rstr) = $pos + 3;
             ($token, $token_desc, $token_type) = ('$#*', 'VARIABLE', 'VARIABLE');
+            $c->add_perl('5.020', '->$#*');
             next;
           }
         } else {
@@ -436,6 +437,11 @@ sub _scan {
           $current_scope |= F_SCOPE_END;
         }
         next;
+      } elsif ($c2 eq '*' and $prev_token_type eq 'ARROW') {
+        pos($$rstr) = $pos + 2;
+        ($token, $token_desc, $token_type) = ('$*', '$*', 'VARIABLE');
+        $c->add_perl('5.020', '->$*');
+        next;
       } elsif ($$rstr =~ m{$g_re_scalar_variable}gc) {
         ($token, $token_desc, $token_type) = ($1, '$NAME', 'VARIABLE');
         next;
@@ -452,10 +458,21 @@ sub _scan {
       } elsif ($c2 eq '{') {
         if ($$rstr =~ m{\G(\@\{[\w\s]+\})}gc) {
           ($token, $token_desc, $token_type) = ($1, '@{NAME}', 'VARIABLE');
+          if ($token eq '@{^CAPTURE}' or $token eq '@{^CAPTURE_ALL}') {
+            $c->add_perl('5.026', '@{^CAPTURE}');
+          }
+        } elsif ($$rstr =~ m{\G(\@\{\^[A-Z]+\})}gc) {
+          ($token, $token_desc, $token_type) = ($1, '@{^NAME}', 'VARIABLE');
+          if ($token eq '@{^CAPTURE}' or $token eq '@{^CAPTURE_ALL}') {
+            $c->add_perl('5.026', '@{^CAPTURE}');
+          }
         } else {
           pos($$rstr) = $pos + 2;
           ($token, $token_desc, $token_type) = ('@{', '@{', 'VARIABLE');
           $stack = [$token, $pos, 'VARIABLE'];
+        }
+        if ($prev_token_type eq 'ARROW') {
+          $c->add_perl('5.020', '->@{}');
         }
         if ($parent_scope & F_EXPECTS_BRACKET) {
           $current_scope |= F_SCOPE_END;
@@ -475,10 +492,12 @@ sub _scan {
         if ($c2 eq '*') {
           pos($$rstr) = $pos + 2;
           ($token, $token_desc, $token_type) = ('@*', '@*', 'VARIABLE');
+          $c->add_perl('5.020', '->@*');
           next;
         } else {
           pos($$rstr) = $pos + 1;
           ($token, $token_desc, $token_type) = ('@', '@', 'VARIABLE');
+          $c->add_perl('5.020', '->@');
           next;
         }
       } elsif ($c2 eq '[') {
@@ -498,10 +517,18 @@ sub _scan {
       if ($c2 eq '{') {
         if ($$rstr =~ m{\G(\%\{[\w\s]+\})}gc) {
           ($token, $token_desc, $token_type) = ($1, '%{NAME}', 'VARIABLE');
+        } elsif ($$rstr =~ m{\G(\%\{\^[A-Z]+\})}gc) {
+          ($token, $token_desc, $token_type) = ($1, '%{^NAME}', 'VARIABLE');
+          if ($token eq '%{^CAPTURE}' or $token eq '%{^CAPTURE_ALL}') {
+            $c->add_perl('5.026', '%{^CAPTURE}');
+          }
         } else {
           pos($$rstr) = $pos + 2;
           ($token, $token_desc, $token_type) = ('%{', '%{', 'VARIABLE');
           $stack = [$token, $pos, 'VARIABLE'];
+        }
+        if ($prev_token_type eq 'ARROW') {
+          $c->add_perl('5.020', '->%{');
         }
         if ($parent_scope & F_EXPECTS_BRACKET) {
           $current_scope |= F_SCOPE_END;
@@ -525,10 +552,12 @@ sub _scan {
         if ($c2 eq '*') {
           pos($$rstr) = $pos + 2;
           ($token, $token_desc, $token_type) = ('%*', '%*', 'VARIABLE');
+          $c->add_perl('5.020', '->%*');
           next;
         } else {
           pos($$rstr) = $pos + 1;
           ($token, $token_desc, $token_type) = ('%', '%', 'VARIABLE');
+          $c->add_perl('5.020', '->%');
           next;
         }
       } else {
@@ -539,7 +568,12 @@ sub _scan {
     } elsif ($c1 eq '*') {
       my $c2 = substr($$rstr, $pos + 1, 1);
       if ($c2 eq '{') {
-        if ($$rstr =~ m{\G(\*\{[\w\s]+\})}gc) {
+        if ($prev_token_type eq 'ARROW') {
+          pos($$rstr) = $pos + 2;
+          ($token, $token_desc, $token_type) = ('*{', '*{', 'VARIABLE');
+          $c->add_perl('5.020', '->*{}');
+          next;
+        } elsif ($$rstr =~ m{\G(\*\{[\w\s]+\})}gc) {
           ($token, $token_desc, $token_type) = ($1, '*{NAME}', 'VARIABLE');
           if ($prev_token eq 'KEYWORD' and $c->token_expects_fh_or_block_list($prev_token)) {
             $token_type = '';
@@ -562,6 +596,7 @@ sub _scan {
         } elsif ($prev_token_type eq 'ARROW') {
           pos($$rstr) = $pos + 2;
           ($token, $token_desc, $token_type) = ('**', '**', 'VARIABLE');
+          $c->add_perl('5.020', '->**');
           next;
         } else {
           pos($$rstr) = $pos + 2;
@@ -612,6 +647,7 @@ sub _scan {
         if ($c2 eq '*') {
           pos($$rstr) = $pos + 2;
           ($token, $token_desc, $token_type) = ('&*', '&*', 'VARIABLE');
+          $c->add_perl('5.020', '->&*');
           next;
         }
       } else {
