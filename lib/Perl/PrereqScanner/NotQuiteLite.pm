@@ -289,6 +289,7 @@ sub scan_string {
   }
 
   $c->remove_inner_packages_from_requirements;
+  $c->merge_perl;
 
   $c;
 }
