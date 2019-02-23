@@ -74,7 +74,7 @@ my %ends_expr = map {$_ => 1} qw(
 
 my %has_sideff = map {$_ => 1} qw(
   and or xor && || //
-  if unless
+  if unless when
 );
 
 # keywords that allow /regexp/ to follow directly
