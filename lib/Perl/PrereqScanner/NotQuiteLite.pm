@@ -258,6 +258,8 @@ sub scan_string {
   } else {
     $string =~ s/(?:\015\012|\015|\012)/\n/gs;
   }
+  $string =~ s/[ \t]+/ /g;
+  $string =~ s/(?: *\n)+/\n/gs;
 
   # FIXME
   $c->{stack} = [];
@@ -352,15 +354,15 @@ sub _scan {
       }
     }
     if ($c1 eq "\n") {
-      $$rstr =~ m{\G(?>\n+)}gcs;
+      pos($$rstr)++;
       $line_top = 1;
       next;
     }
 
     $line_top = 0;
     # ignore whitespaces
-    if ($c1 eq ' ' or $c1 eq "\t") {
-      $$rstr =~ m{\G(?>[ \t]+)}gc;
+    if ($c1 eq ' ') {
+      pos($$rstr)++;
       next;
     } elsif ($c1 eq '_') {
       my $c2 = substr($$rstr, $pos + 1, 1);
