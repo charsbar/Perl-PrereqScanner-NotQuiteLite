@@ -1820,7 +1820,7 @@ sub _match_heredoc {
   my $indent = $1 ? "\\s*" : "";
 
   my $label;
-  if ($$rstr =~ m{\G([A-Za-z_]\w*)}gc) {
+  if ($$rstr =~ m{\G\\?([A-Za-z_]\w*)}gc) {
     $label = $1;
   } elsif ($$rstr =~ m{
       \G ' ($re_str_in_single_quotes) '
