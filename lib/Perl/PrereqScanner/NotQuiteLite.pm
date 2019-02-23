@@ -428,6 +428,14 @@ sub _scan {
             $token_type = '';
             next;
           }
+        } elsif ($$rstr =~ m{\G(\$\{\^[A-Z]+\})}gc) {
+          ($token, $token_desc, $token_type) = ($1, '${^NAME}', 'VARIABLE');
+          if ($token eq '${^CAPTURE}' or $token eq '${^CAPTURE_ALL}') {
+            $c->add_perl('5.026', '${^CAPTURE}');
+          }
+          if ($token eq '${^SAFE_LOCALES}') {
+            $c->add_perl('5.028', '${^SAFE_LOCALES}');
+          }
         } else {
           pos($$rstr) = $pos + 2;
           ($token, $token_desc, $token_type) = ('${', '${', 'VARIABLE');
@@ -441,6 +449,11 @@ sub _scan {
         pos($$rstr) = $pos + 2;
         ($token, $token_desc, $token_type) = ('$*', '$*', 'VARIABLE');
         $c->add_perl('5.020', '->$*');
+        next;
+      } elsif ($c2 eq '+' or $c2 eq '-') {
+        pos($$rstr) = $pos + 2;
+        ($token, $token_desc, $token_type) = ('$'.$c2, 'SPECIAL_VARIABLE', 'VARIABLE');
+        $c->add_perl('5.010', '$'.$c2);
         next;
       } elsif ($$rstr =~ m{$g_re_scalar_variable}gc) {
         ($token, $token_desc, $token_type) = ($1, '$NAME', 'VARIABLE');
@@ -504,6 +517,11 @@ sub _scan {
         pos($$rstr) = $pos + 2;
         ($token, $token_desc, $token_type) = ('@[', 'SPECIAL_VARIABLE', 'VARIABLE');
         next;
+      } elsif ($c2 eq '+' or $c2 eq '-') {
+        pos($$rstr) = $pos + 2;
+        ($token, $token_desc, $token_type) = ('@'.$c2, 'SPECIAL_VARIABLE', 'VARIABLE');
+        $c->add_perl('5.010', '@'.$c2);
+        next;
       } elsif ($$rstr =~ m{\G(\@(?:$re_namespace))}gc) {
         ($token, $token_desc, $token_type) = ($1, '@NAME', 'VARIABLE');
         next;
@@ -560,6 +578,11 @@ sub _scan {
           $c->add_perl('5.020', '->%');
           next;
         }
+      } elsif ($c2 eq '+' or $c2 eq '-') {
+        pos($$rstr) = $pos + 2;
+        ($token, $token_desc, $token_type) = ('%'.$c2, 'SPECIAL_VARIABLE', 'VARIABLE');
+        $c->add_perl('5.010', '%'.$c2);
+        next;
       } else {
         pos($$rstr) = $pos + 1;
         ($token, $token_desc, $token_type) = ($c1, $c1, 'VARIABLE');
