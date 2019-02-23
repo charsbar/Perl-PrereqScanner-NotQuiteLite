@@ -81,6 +81,7 @@ my %has_sideff = map {$_ => 1} qw(
 my %regexp_may_follow = map {$_ => 1} qw(
   and or cmp if elsif unless eq ne
   gt lt ge le for while until grep map not split when
+  return
 );
 
 my $re_namespace = qr/(?:::|')?(?:\w+(?:(?:::|')\w+)*)/;
