@@ -49,6 +49,14 @@ my %enables_utf8 = map {$_ => 1} qw(
   Mojo::Base::Che
 );
 
+my %new_keyword_since = (
+  say => '5.010',
+  state => '5.010',
+  given => '5.010',
+  when => '5.010',
+  default => '5.010',
+);
+
 my $default_g_re_prototype = qr{\G(\([^\)]*?\))};
 
 sub new {
@@ -322,6 +330,13 @@ sub token_is_keyword {
   return 0 if !exists $self->{defined_keywords};
   return 1 if exists $self->{defined_keywords}{$token};
   return 0;
+}
+
+sub check_new_keyword {
+  my ($self, $token) = @_;
+  if (exists $new_keyword_since{$token}) {
+    $self->add_perl($new_keyword_since{$token}, $token);
+  }
 }
 
 sub register_keywords {
