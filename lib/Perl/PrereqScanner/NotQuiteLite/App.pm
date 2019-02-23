@@ -79,6 +79,10 @@ sub new {
     }
   }
 
+  if ($opts{scan_also}) {
+    $opts{libs} ||= delete $opts{scan_also};
+  }
+
   bless \%opts, $class;
 }
 
