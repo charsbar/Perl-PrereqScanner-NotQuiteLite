@@ -799,6 +799,10 @@ sub _scan {
     } elsif ($c1 eq '{') {
       if ($$rstr =~ m{$g_re_hash_shortcut}gc) {
         ($token, $token_desc) = ($1, '{TERM}');
+        if ($current_scope & F_EVAL) {
+          $current_scope &= MASK_EVAL;
+          $c->{eval} = ($current_scope | $parent_scope) & F_EVAL ? 1 : 0;
+        }
         if ($parent_scope & F_EXPECTS_BRACKET) {
           $current_scope |= F_SCOPE_END;
           next;
@@ -880,6 +884,10 @@ sub _scan {
       } elsif ($$rstr =~ m{\G\(((?:$re_nonblock_chars)(?<!\$))\)}gc) {
         ($token, $token_desc, $token_type) = ([[[$1, 'TERM']]], '()', 'TERM');
         if ($prev_token_type eq 'KEYWORD' and @keywords and $keywords[-1] eq $prev_token and !$c->token_expects_expr_block($prev_token)) {
+          if ($prev_token eq 'eval') {
+            $current_scope &= MASK_EVAL;
+            $c->{eval} = ($current_scope | $parent_scope) & F_EVAL ? 1 : 0;
+          }
           pop @keywords;
         }
         next;
