@@ -384,7 +384,7 @@ sub _scan {
     } elsif ($c1 eq ';') {
       pos($$rstr) = $pos + 1;
       ($token, $token_desc, $token_type) = ($c1, ';', ';');
-      $current_scope |= F_SENTENCE_END|F_EXPR_END;
+      $current_scope |= F_STATEMENT_END|F_EXPR_END;
       next;
     } elsif ($c1 eq '$') {
       my $c2 = substr($$rstr, $pos + 1, 1);
@@ -849,7 +849,7 @@ sub _scan {
       }
       $stack = [$token, $pos, $stack_owner || ''];
       if ($parent_scope & F_EXPECTS_BRACKET) {
-        $current_scope |= F_SCOPE_END|F_SENTENCE_END|F_EXPR_END;
+        $current_scope |= F_SCOPE_END|F_STATEMENT_END|F_EXPR_END;
         next;
       }
       if ($prev_token_type eq 'ARROW' or $prev_token_type eq 'VARIABLE') {
@@ -911,7 +911,7 @@ sub _scan {
       pos($$rstr) = $pos + 1;
       ($token, $token_desc, $token_type) = ($c1, $c1, '');
       $unstack = $token;
-      $current_scope |= F_SENTENCE_END|F_EXPR_END;
+      $current_scope |= F_STATEMENT_END|F_EXPR_END;
       next;
     } elsif ($c1 eq ']') {
       pos($$rstr) = $pos + 1;
@@ -1359,7 +1359,7 @@ sub _scan {
         if ($$rstr =~ m{\G([^=]*?=[ \t]*\n.*?\n\.\n)}gcs) {
           $token .= $1;
           ($token_desc, $token_type) = ('FORMAT', '');
-          $current_scope |= F_SENTENCE_END|F_EXPR_END;
+          $current_scope |= F_STATEMENT_END|F_EXPR_END;
           next;
         }
       } elsif ($c->token_is_keyword($token) and ($prev_token_type ne 'KEYWORD' or !$c->token_expects_word($prev_token) or ($prev_token eq 'sub' and $token eq 'BEGIN'))) {
@@ -1535,11 +1535,11 @@ sub _scan {
         }
 
         if ($stack->[0] eq '{' and @keywords and $c->token_expects_block($keywords[0]) and !$c->token_expects_block_list($keywords[-1])) {
-          $current_scope |= F_SENTENCE_END unless @tokens and ($c->token_defines_sub($keywords[-1]) or $keywords[-1] eq 'eval');
+          $current_scope |= F_STATEMENT_END unless @tokens and ($c->token_defines_sub($keywords[-1]) or $keywords[-1] eq 'eval');
         }
         $stack = undef;
       }
-      if ($current_scope & F_SENTENCE_END) {
+      if ($current_scope & F_STATEMENT_END) {
         if (($current_scope & F_KEEP_TOKENS) and @tokens) {
           my $first_token = $tokens[0][0];
           if ($first_token eq '->') {
@@ -1606,7 +1606,7 @@ sub _scan {
         }
         @tokens = ();
         @keywords = ();
-        $current_scope &= MASK_SENTENCE_END;
+        $current_scope &= MASK_STATEMENT_END;
         $caller_package = undef;
         $token = $token_type = '';
         _debug('END SENTENSE') if DEBUG;
