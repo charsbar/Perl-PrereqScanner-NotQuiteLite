@@ -391,16 +391,16 @@ sub _scan {
       if ($c2 eq '#') {
         if (substr($$rstr, $pos + 2, 1) eq '{') {
           if ($$rstr =~ m{\G(\$\#\{[\w\s]+\})}gc) {
-            ($token, $token_desc, $token_type) = ($1, '$#{NAME}', 'TERM');
+            ($token, $token_desc, $token_type) = ($1, '$#{NAME}', 'EXPR');
             next;
           } else {
             pos($$rstr) = $pos + 3;
-            ($token, $token_desc, $token_type) = ('$#{', '$#{', 'TERM');
+            ($token, $token_desc, $token_type) = ('$#{', '$#{', 'EXPR');
             $stack = [$token, $pos, 'VARIABLE'];
             next;
           }
         } elsif ($$rstr =~ m{\G(\$\#(?:$re_namespace))}gc) {
-          ($token, $token_desc, $token_type) = ($1, '$#NAME', 'TERM');
+          ($token, $token_desc, $token_type) = ($1, '$#NAME', 'EXPR');
           next;
         } elsif ($prev_token_type eq 'ARROW') {
           my $c3 = substr($$rstr, $pos + 2, 1);
@@ -412,7 +412,7 @@ sub _scan {
           }
         } else {
           pos($$rstr) = $pos + 2;
-          ($token, $token_desc, $token_type) = ('$#', 'SPECIAL_VARIABLE', 'TERM');
+          ($token, $token_desc, $token_type) = ('$#', 'SPECIAL_VARIABLE', 'EXPR');
           next;
         }
       } elsif ($c2 eq '$') {
@@ -421,7 +421,7 @@ sub _scan {
           next;
         } else {
           pos($$rstr) = $pos + 2;
-          ($token, $token_desc, $token_type) = ('$$', 'SPECIAL_VARIABLE', 'TERM');
+          ($token, $token_desc, $token_type) = ('$$', 'SPECIAL_VARIABLE', 'EXPR');
           next;
         }
       } elsif ($c2 eq '{') {
@@ -565,7 +565,7 @@ sub _scan {
       } elsif ($$rstr =~ m{\G(\%(?:$re_namespace))}gc) {
         ($token, $token_desc, $token_type) = ($1, '%NAME', 'VARIABLE');
         next;
-      } elsif ($prev_token_type eq 'VARIABLE' or $prev_token_type eq 'TERM') {
+      } elsif ($prev_token_type eq 'VARIABLE' or $prev_token_type eq 'EXPR') {
         pos($$rstr) = $pos + 1;
         ($token, $token_desc, $token_type) = ($c1, $c1, 'OP');
         next;
@@ -653,10 +653,10 @@ sub _scan {
         next;
       } elsif ($c2 eq '{') {
         if ($$rstr =~ m{\G(\&\{[\w\s]+\})}gc) {
-          ($token, $token_desc, $token_type) = ($1, '&{NAME}', 'TERM');
+          ($token, $token_desc, $token_type) = ($1, '&{NAME}', 'EXPR');
         } else {
           pos($$rstr) = $pos + 2;
-          ($token, $token_desc, $token_type) = ('&{', '&{', 'TERM');
+          ($token, $token_desc, $token_type) = ('&{', '&{', 'EXPR');
           $stack = [$token, $pos, 'FUNC'];
         }
         if ($parent_scope & F_EXPECTS_BRACKET) {
@@ -674,10 +674,10 @@ sub _scan {
         $c->add_perl('5.022', '&.');
         next;
       } elsif ($$rstr =~ m{\G(\&(?:$re_namespace))}gc) {
-        ($token, $token_desc, $token_type) = ($1, '&NAME', 'TERM');
+        ($token, $token_desc, $token_type) = ($1, '&NAME', 'EXPR');
         next;
       } elsif ($$rstr =~ m{\G(\&\$(?:$re_namespace))}gc) {
-        ($token, $token_desc, $token_type) = ($1, '&$NAME', 'TERM');
+        ($token, $token_desc, $token_type) = ($1, '&$NAME', 'EXPR');
         next;
       } elsif ($prev_token_type eq 'ARROW') {
         if ($c2 eq '*') {
@@ -729,7 +729,7 @@ sub _scan {
         ($token, $token_desc, $token_type) = ('-=', '-=', 'OP');
         next;
       } elsif ($$rstr =~ m{\G(\-[ABCMORSTWXbcdefgkloprstuwxz]\b)}gc) {
-        ($token, $token_desc, $token_type) = ($1, 'FILE_TEST', 'TERM');
+        ($token, $token_desc, $token_type) = ($1, 'FILE_TEST', 'EXPR');
         next;
       } else {
         pos($$rstr) = $pos + 1;
@@ -748,13 +748,13 @@ sub _scan {
       }
     } elsif ($c1 eq '`') {
       if ($$rstr =~ m{\G(?:\`($re_str_in_backticks)\`)}gcs) {
-        ($token, $token_desc, $token_type) = ([$1, q{`}], 'BACKTICK', 'TERM');
+        ($token, $token_desc, $token_type) = ([$1, q{`}], 'BACKTICK', 'EXPR');
         next;
       }
     } elsif ($c1 eq '/') {
       if ($prev_token_type eq '' or $prev_token_type eq 'OP' or ($prev_token_type eq 'KEYWORD' and $regexp_may_follow{$prev_token})) { # undoubtedly regexp
         if (my $regexp = $self->_match_regexp0($c, $rstr, $pos, 'm')) {
-          ($token, $token_desc, $token_type) = ($regexp, 'REGEXP', 'TERM');
+          ($token, $token_desc, $token_type) = ($regexp, 'REGEXP', 'EXPR');
           next;
         } else {
           # the above may fail
@@ -765,7 +765,7 @@ sub _scan {
       if (($prev_token_type eq '' or (!($current_scope & F_EXPR) and $prev_token_type eq 'WORD')) or ($prev_token_type eq 'KEYWORD' and @keywords and $prev_token eq $keywords[-1] and $regexp_may_follow{$prev_token})) {
 
         if (my $regexp = $self->_match_regexp0($c, $rstr, $pos)) {
-          ($token, $token_desc, $token_type) = ($regexp, 'REGEXP', 'TERM');
+          ($token, $token_desc, $token_type) = ($regexp, 'REGEXP', 'EXPR');
           next;
         } else { 
           # the above may fail
@@ -798,7 +798,7 @@ sub _scan {
       }
     } elsif ($c1 eq '{') {
       if ($$rstr =~ m{$g_re_hash_shortcut}gc) {
-        ($token, $token_desc) = ($1, '{TERM}');
+        ($token, $token_desc) = ($1, '{EXPR}');
         if ($current_scope & F_EVAL) {
           $current_scope &= MASK_EVAL;
           $c->{eval} = ($current_scope | $parent_scope) & F_EVAL ? 1 : 0;
@@ -826,7 +826,7 @@ sub _scan {
           $token_type = '';
           next;
         } else {
-          $token_type = 'TERM';
+          $token_type = 'EXPR';
           next;
         }
       }
@@ -857,12 +857,12 @@ sub _scan {
       } elsif ($waiting_for_a_block) {
         $waiting_for_a_block = 0;
       } else {
-        $token_type = (($current_scope | $parent_scope) & F_KEEP_TOKENS) ? 'TERM' : '';
+        $token_type = (($current_scope | $parent_scope) & F_KEEP_TOKENS) ? 'EXPR' : '';
       }
       next;
     } elsif ($c1 eq '[') {
       if ($$rstr =~ m{\G(\[(?:$re_nonblock_chars)\])}gc) {
-        ($token, $token_desc, $token_type) = ($1, '[TERM]', 'VARIABLE');
+        ($token, $token_desc, $token_type) = ($1, '[EXPR]', 'VARIABLE');
         next;
       } else {
         pos($$rstr) = $pos + 1;
@@ -882,7 +882,7 @@ sub _scan {
         }
         next;
       } elsif ($$rstr =~ m{\G\(((?:$re_nonblock_chars)(?<!\$))\)}gc) {
-        ($token, $token_desc, $token_type) = ([[[$1, 'TERM']]], '()', 'TERM');
+        ($token, $token_desc, $token_type) = ([[[$1, 'EXPR']]], '()', 'EXPR');
         if ($prev_token_type eq 'KEYWORD' and @keywords and $keywords[-1] eq $prev_token and !$c->token_expects_expr_block($prev_token)) {
           if ($prev_token eq 'eval') {
             $current_scope &= MASK_EVAL;
@@ -893,7 +893,7 @@ sub _scan {
         next;
       } else {
         pos($$rstr) = $pos + 1;
-        ($token, $token_desc, $token_type) = ($c1, $c1, 'TERM');
+        ($token, $token_desc, $token_type) = ($c1, $c1, 'EXPR');
         my $stack_owner;
         if (@keywords) {
           for (my $i = @keywords; $i > 0; $i--) {
@@ -937,7 +937,7 @@ sub _scan {
           \~ |
           \$ |
         )*(?<!\-)>>)}gcx) {
-          ($token, $token_desc, $token_type) = ($1, '<<NAME>>', 'TERM');
+          ($token, $token_desc, $token_type) = ($1, '<<NAME>>', 'EXPR');
           $c->add_perl('5.022', '<<NAME>>');
           next;
         } elsif ($$rstr =~ m{\G<<~?\s*(?:
@@ -947,7 +947,7 @@ sub _scan {
           `(?:[^\\`]*(?:\\.[^\\`]*)*)`
         )}sx) {
           if (my $heredoc = $self->_match_heredoc($c, $rstr)) {
-            ($token, $token_desc, $token_type) = ($heredoc, 'HEREDOC', 'TERM');
+            ($token, $token_desc, $token_type) = ($heredoc, 'HEREDOC', 'EXPR');
             next;
           } else {
             # the above may fail
@@ -988,7 +988,7 @@ sub _scan {
         \~ |
         \$ |
       )*(?<!\-)>)}gcx) {
-        ($token, $token_desc, $token_type) = ($1, '<NAME>', 'TERM');
+        ($token, $token_desc, $token_type) = ($1, '<NAME>', 'EXPR');
         next;
       } else {
         pos($$rstr) = $pos + 1;
@@ -1222,12 +1222,12 @@ sub _scan {
       my $c2 = substr($$rstr, $pos + 1, 1);
       if ($c2 eq 'x') {
         if ($$rstr =~ m{\G(0x[0-9A-Fa-f_]+)}gc) {
-          ($token, $token_desc, $token_type) = ($1, 'HEX NUMBER', 'TERM');
+          ($token, $token_desc, $token_type) = ($1, 'HEX NUMBER', 'EXPR');
           next;
         }
       } elsif ($c2 eq 'b') {
         if ($$rstr =~ m{\G(0b[01_]+)}gc) {
-          ($token, $token_desc, $token_type) = ($1, 'BINARY NUMBER', 'TERM');
+          ($token, $token_desc, $token_type) = ($1, 'BINARY NUMBER', 'EXPR');
           next;
         }
       }
@@ -1240,7 +1240,7 @@ sub _scan {
       if ($n1 eq '.') {
         if ($$rstr =~ m{\G((?:\.[0-9_])+)}gc) {
           $number .= $1;
-          ($token, $token_desc, $token_type) = ($number, 'VERSION_STRING', 'TERM');
+          ($token, $token_desc, $token_type) = ($number, 'VERSION_STRING', 'EXPR');
           next;
         } elsif (substr($$rstr, $p, 2) ne '..') {
           $number .= '.';
@@ -1251,7 +1251,7 @@ sub _scan {
           $number .= $1;
         }
       }
-      ($token, $token_desc, $token_type) = ($number, 'NUMBER', 'TERM');
+      ($token, $token_desc, $token_type) = ($number, 'NUMBER', 'EXPR');
       if ($prepend) {
         $token = "$prepend$token";
         pop @tokens if @tokens and $tokens[-1][0] eq $prepend;
@@ -1261,7 +1261,7 @@ sub _scan {
     }
 
     if ($prev_token_type ne 'ARROW' and ($prev_token_type ne 'KEYWORD' or !$c->token_expects_word($prev_token))) {
-      if ($prev_token_type eq 'TERM' or $prev_token_type eq 'VARIABLE') {
+      if ($prev_token_type eq 'EXPR' or $prev_token_type eq 'VARIABLE') {
         if ($c1 eq 'x') {
           if ($$rstr =~ m{\G(x\b(?!\s*=>))}gc){
             ($token, $token_desc, $token_type) = ($1, $1, '');
@@ -1282,7 +1282,7 @@ sub _scan {
           }
         } elsif ($$rstr =~ m{\G((?:qw)\b(?!\s*=>))}gc) {
           if (my $quotelike = $self->_match_quotelike($c, $rstr, $1)) {
-            ($token, $token_desc, $token_type) = ($quotelike, 'QUOTED_WORD_LIST', 'TERM');
+            ($token, $token_desc, $token_type) = ($quotelike, 'QUOTED_WORD_LIST', 'EXPR');
             next;
           } else {
             _debug("QUOTELIKE ERROR: $@") if DEBUG;
@@ -1290,7 +1290,7 @@ sub _scan {
           }
         } elsif ($$rstr =~ m{\G((?:qx)\b(?!\s*=>))}gc) {
           if (my $quotelike = $self->_match_quotelike($c, $rstr, $1)) {
-            ($token, $token_desc, $token_type) = ($quotelike, 'BACKTICK', 'TERM');
+            ($token, $token_desc, $token_type) = ($quotelike, 'BACKTICK', 'EXPR');
             next;
           } else {
             _debug("QUOTELIKE ERROR: $@") if DEBUG;
@@ -1298,7 +1298,7 @@ sub _scan {
           }
         } elsif ($$rstr =~ m{\G(qr\b(?!\s*=>))}gc) {
           if (my $regexp = $self->_match_regexp($c, $rstr)) {
-            ($token, $token_desc, $token_type) = ($regexp, 'qr', 'TERM');
+            ($token, $token_desc, $token_type) = ($regexp, 'qr', 'EXPR');
             next;
           } else {
             _debug("QUOTELIKE ERROR: $@") if DEBUG;
@@ -1308,7 +1308,7 @@ sub _scan {
       } elsif ($c1 eq 'm') {
         if ($$rstr =~ m{\G(m\b(?!\s*=>))}gc) {
           if (my $regexp = $self->_match_regexp($c, $rstr)) {
-            ($token, $token_desc, $token_type) = ($regexp, 'm', 'TERM');
+            ($token, $token_desc, $token_type) = ($regexp, 'm', 'EXPR');
             next;
           } else {
             _debug("REGEXP ERROR: $@") if DEBUG;
@@ -1318,7 +1318,7 @@ sub _scan {
       } elsif ($c1 eq 's') {
         if ($$rstr =~ m{\G(s\b(?!\s*=>))}gc) {
           if (my $regexp = $self->_match_substitute($c, $rstr)) {
-            ($token, $token_desc, $token_type) = ($regexp, 's', 'TERM');
+            ($token, $token_desc, $token_type) = ($regexp, 's', 'EXPR');
             next;
           } else {
             _debug("SUBSTITUTE ERROR: $@") if DEBUG;
@@ -1328,7 +1328,7 @@ sub _scan {
       } elsif ($c1 eq 't') {
         if ($$rstr =~ m{\G(tr\b(?!\s*=>))}gc) {
           if (my $trans = $self->_match_transliterate($c, $rstr)) {
-            ($token, $token_desc, $token_type) = ($trans, 'tr', 'TERM');
+            ($token, $token_desc, $token_type) = ($trans, 'tr', 'EXPR');
             next;
           } else {
             _debug("TRANSLITERATE ERROR: $@") if DEBUG;
@@ -1338,7 +1338,7 @@ sub _scan {
       } elsif ($c1 eq 'y') {
         if ($$rstr =~ m{\G(y\b(?!\s*=>))}gc) {
           if (my $trans = $self->_match_transliterate($c, $rstr)) {
-            ($token, $token_desc, $token_type) = ($trans, 'y', 'TERM');
+            ($token, $token_desc, $token_type) = ($trans, 'y', 'EXPR');
             next;
           } else {
             _debug("TRANSLITERATE ERROR: $@") if DEBUG;
@@ -1374,7 +1374,7 @@ sub _scan {
         if ($c1 eq 'v' and $token =~ /^v(?:0|[1-9][0-9]*)$/) {
           if ($$rstr =~ m{\G((?:\.[0-9][0-9_]*)+)}gc) {
             $token .= $1;
-            ($token_desc, $token_type) = ('VERSION_STRING', 'TERM');
+            ($token_desc, $token_type) = ('VERSION_STRING', 'EXPR');
             next;
           }
         }
