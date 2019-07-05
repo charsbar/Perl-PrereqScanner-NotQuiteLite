@@ -84,7 +84,7 @@ my %regexp_may_follow = map {$_ => 1} qw(
   return
 );
 
-my $re_namespace = qr/(?:::|')?(?:\w+(?:(?:::|')\w+)*)/;
+my $re_namespace = qr/(?:::|')?(?:[a-zA-Z0-9_]+(?:(?:::|')[a-zA-Z0-9_]+)*)/;
 my $re_nonblock_chars = qr/[^\\\(\)\{\}\[\]\<\>\/"'`#q~,\s]*/;
 my $re_variable = qr/
   (?:$re_namespace)
