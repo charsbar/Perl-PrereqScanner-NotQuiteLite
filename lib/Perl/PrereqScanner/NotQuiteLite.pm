@@ -222,6 +222,7 @@ sub _get_parsers {
 
 sub scan_file {
   my ($self, $file) = @_;
+  print STDERR " Scanning $file\n" if $self->{verbose};
   open my $fh, '<', $file or croak "Can't open $file: $!";
   my $code = do { local $/; <$fh> };
   $self->{file} = $file;

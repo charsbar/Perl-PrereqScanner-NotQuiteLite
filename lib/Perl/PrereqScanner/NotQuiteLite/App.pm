@@ -112,6 +112,11 @@ sub run {
     push @args, "xt", "author" if $self->{develop};
   }
 
+  if ($self->{verbose}) {
+    print STDERR "Scanning the following files/directories\n";
+    print STDERR "  $_\n" for sort @args;
+  }
+
   for my $path (@args) {
     my $item = File::Spec->file_name_is_absolute($path) ? $path : File::Spec->catfile($self->{base_dir}, $path);
     -d $item ? $self->_scan_dir($item) :
@@ -236,7 +241,11 @@ sub _exclude_local_modules {
   my $private_re = $self->{private_re};
   for my $req ($self->_requirements) {
     for my $module ($req->required_modules) {
-      $req->clear_requirement($module) if $self->{possible_modules}{$module} or ($private_re and $module =~ /$private_re/);
+      next unless $self->{possible_modules}{$module} or ($private_re and $module =~ /$private_re/);
+      $req->clear_requirement($module);
+      if ($self->{verbose}) {
+        print STDERR "  excluded $module (local)\n";
+      }
     }
   }
 }
@@ -270,7 +279,11 @@ sub _exclude_core_prereqs {
           !Module::CoreList::deprecated_in($module, undef, $perl_version)
       ) {
         my $core_version = $Module::CoreList::version{$perl_version}{$module} or next;
-        $req->clear_requirement($module) if $req->accepts_module($module => $core_version);
+        next unless $req->accepts_module($module => $core_version);
+        $req->clear_requirement($module);
+        if ($self->{verbose}) {
+          print STDERR "  excluded $module ($perl_version core)\n";
+        }
       }
     }
   }
@@ -368,6 +381,9 @@ sub _dedupe_indexed_prereqs {
       for my $module (@modules_without_version) {
         next if $topmost eq $module;
         $req->clear_requirement($module);
+        if ($self->{verbose}) {
+          print STDERR "  deduped $module (in favor of $topmost)\n";
+        }
       }
     }
   }
@@ -402,6 +418,7 @@ sub _scan_file {
     parsers => $self->{parsers},
     recommends => $self->{recommends},
     suggests => $self->{suggests},
+    verbose => $self->{verbose},
   )->scan_file($file);
 
   my $relpath = File::Spec->abs2rel($file, $self->{base_dir});
