@@ -158,6 +158,8 @@ sub run {
   $self->{prereqs};
 }
 
+sub index { shift->{index} }
+
 sub _print_prereqs {
   my $self = shift;
 
@@ -610,6 +612,10 @@ not versioned).
 traverses files and directories and returns a L<CPAN::Meta::Prereqs>
 object that keeps all the requirements/suggestions, without printing
 anything unless you explicitly pass a C<print> option to C<new>.
+
+=head2 index
+
+returns a L<CPAN::Common::Index> backend object (if any).
 
 =head1 AUTHOR
 
