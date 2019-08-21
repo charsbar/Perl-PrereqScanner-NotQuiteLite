@@ -378,7 +378,7 @@ sub _dedupe_indexed_prereqs {
         my $length = length $module;
         $score{$module} = join ".", ($depth || 0), $length;
       }
-      my $topmost = (sort {$score{$a} <=> $score{$b}} @modules_without_version)[0];
+      my $topmost = (sort {$score{$a} <=> $score{$b} or $a cmp $b} @modules_without_version)[0];
       for my $module (@modules_without_version) {
         next if $topmost eq $module;
         $req->clear_requirement($module);
