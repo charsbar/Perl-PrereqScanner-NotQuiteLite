@@ -3,6 +3,7 @@ package Perl::PrereqScanner::NotQuiteLite::App;
 use strict;
 use warnings;
 use File::Find;
+use File::Glob 'bsd_glob';
 use File::Basename;
 use File::Spec;
 use CPAN::Meta::Prereqs;
@@ -47,7 +48,7 @@ sub new {
       my ($identifier, $description, $paths) = split ':', $spec;
       $map{$identifier} = {
         description => $description,
-        paths => [split ',', $paths],
+        paths => [map { bsd_glob($_) } split ',', $paths],
       };
     }
     $opts{features} = \%map;
@@ -106,7 +107,7 @@ sub run {
     }
 
     # extra libs
-    push @args, @{$self->{libs} || []};
+    push @args, map { bsd_glob($_) } @{$self->{libs} || []};
 
     # for develop requires
     push @args, "xt", "author" if $self->{develop};
