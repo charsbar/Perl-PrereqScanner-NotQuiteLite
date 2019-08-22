@@ -48,7 +48,7 @@ sub new {
       my ($identifier, $description, $paths) = split ':', $spec;
       $map{$identifier} = {
         description => $description,
-        paths => [map { bsd_glob($_) } split ',', $paths],
+        paths => [map { bsd_glob(File::Spec->catdir($opts{base_dir}, $_)) } split ',', $paths],
       };
     }
     $opts{features} = \%map;
@@ -107,7 +107,7 @@ sub run {
     }
 
     # extra libs
-    push @args, map { bsd_glob($_) } @{$self->{libs} || []};
+    push @args, map { bsd_glob(File::Spec->catdir($self->{base_dir}, $_)) } @{$self->{libs} || []};
 
     # for develop requires
     push @args, "xt", "author" if $self->{develop};
@@ -429,7 +429,7 @@ sub _scan_file {
   if ($self->{features}) {
     for my $identifier (keys %{$self->{features}}) {
       my $feature = $self->{features}{$identifier};
-      if (grep {$relpath =~ m!^$_(?:/|$)!} @{$feature->{paths}}) {
+      if (grep {$file =~ m!^$_(?:/|$)!} @{$feature->{paths}}) {
         $prereqs = $feature->{prereqs} ||= CPAN::Meta::Prereqs->new;
         last;
       }
