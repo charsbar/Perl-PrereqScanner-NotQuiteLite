@@ -11,6 +11,8 @@ use CPAN::Meta::Requirements;
 use Perl::PrereqScanner::NotQuiteLite;
 use Perl::PrereqScanner::NotQuiteLite::Util::Prereqs;
 
+use constant WIN32 => $^O eq 'MSWin32';
+
 my %IsTestClassFamily = map {$_ => 1} qw(
   Test::Class
   Test::Class::Moose
@@ -47,7 +49,7 @@ sub new {
     for my $spec (@features) {
       my ($identifier, $description, $paths) = split ':', $spec;
       my @paths = map { bsd_glob(File::Spec->catdir($opts{base_dir}, $_)) } split ',', $paths;
-      if ($^O eq 'MSWin32') {
+      if (WIN32) {
           s|\\|/|g for @paths;
       }
       $map{$identifier} = {
@@ -62,7 +64,7 @@ sub new {
     require Regexp::Trie;
     my $re = Regexp::Trie->new;
     for (@{$opts{ignore}}) {
-        s|\\|/|g if $^O eq 'MSWin32';
+        s|\\|/|g if WIN32;
         $re->add($_);
     }
     $opts{ignore_re} ||= $re->_regexp;
@@ -414,7 +416,7 @@ sub _scan_dir {
 sub _scan_file {
   my ($self, $file) = @_;
 
-  $file =~ s|\\|/|g if $^O eq 'MSWin32';
+  $file =~ s|\\|/|g if WIN32;
   if ($self->{ignore_re}) {
     return if $file =~ /\b$self->{ignore_re}\b/;
   }
@@ -427,7 +429,7 @@ sub _scan_file {
   )->scan_file($file);
 
   my $relpath = File::Spec->abs2rel($file, $self->{base_dir});
-  $relpath =~ s|\\|/|g if $^O eq 'MSWin32';
+  $relpath =~ s|\\|/|g if WIN32;
 
   my $prereqs = $self->{prereqs};
   if ($self->{features}) {
