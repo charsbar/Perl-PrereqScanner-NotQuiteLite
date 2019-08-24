@@ -46,9 +46,13 @@ sub new {
     my %map;
     for my $spec (@features) {
       my ($identifier, $description, $paths) = split ':', $spec;
+      my @paths = map { bsd_glob(File::Spec->catdir($opts{base_dir}, $_)) } split ',', $paths;
+      if ($^O eq 'MSWin32') {
+          s|\\|/|g for @paths;
+      }
       $map{$identifier} = {
         description => $description,
-        paths => [map { bsd_glob(File::Spec->catdir($opts{base_dir}, $_)) } split ',', $paths],
+        paths => \@paths,
       };
     }
     $opts{features} = \%map;
@@ -410,8 +414,8 @@ sub _scan_dir {
 sub _scan_file {
   my ($self, $file) = @_;
 
+  $file =~ s|\\|/|g if $^O eq 'MSWin32';
   if ($self->{ignore_re}) {
-    $file =~ s|\\|/|g if $^O eq 'MSWin32';
     return if $file =~ /\b$self->{ignore_re}\b/;
   }
 
