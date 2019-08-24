@@ -1,5 +1,8 @@
 Revision history for Perl-PrereqScanner-NotQuiteLite
 
+0.9908 2019/08/24
+  - fixed Win32 path separator issues
+
 0.9907 2019/08/22
   - changed scan_also and features options to accept glob expressions
   - added "version" option to show what's going on
