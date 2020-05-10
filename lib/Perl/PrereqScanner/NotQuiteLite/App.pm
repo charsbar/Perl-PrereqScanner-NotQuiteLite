@@ -163,6 +163,7 @@ sub run {
       } elsif ($self->{print}) {
         print $cpanfile->to_string, "\n";
       }
+      return $cpanfile;
     } elsif ($self->{print}) {
       $self->_print_prereqs;
     }
