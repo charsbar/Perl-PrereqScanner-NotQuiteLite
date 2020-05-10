@@ -160,10 +160,10 @@ sub run {
 
       if ($self->{save_cpanfile}) {
         $cpanfile->save($file);
-      } else {
+      } elsif ($self->{print}) {
         print $cpanfile->to_string, "\n";
       }
-    } else {
+    } elsif ($self->{print}) {
       $self->_print_prereqs;
     }
   }
