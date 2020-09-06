@@ -194,7 +194,7 @@ sub _requirements {
   my ($self, $prereqs) = @_;
 
   $prereqs ||= $self->{prereqs};
-  my @phases = qw/configure runtime test/;
+  my @phases = qw/configure runtime build test/;
   push @phases, 'develop' if $self->{develop};
   my @types = $self->{suggests} ? qw/requires recommends suggests/ : $self->{recommends} ? qw/requires recommends/ : qw/requires/;
   my @requirements;
