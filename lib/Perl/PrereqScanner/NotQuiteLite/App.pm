@@ -349,21 +349,30 @@ sub _dedupe {
   dedupe_prereqs_and_features($prereqs, \%features);
 }
 
+sub _get_uri {
+  my ($self, $module) = @_;
+  $self->{uri_cache}{$module} ||= $self->__get_uri($module);
+}
+
+sub __get_uri {
+  my ($self, $module) = @_;
+  my $res = $self->{index}->search_packages({ package => $module }) or return;
+  ## ignore (non-dual) core modules
+  return if URI->new($res->{uri})->dist_name eq 'perl';
+  return $res->{uri};
+}
+
 sub _dedupe_indexed_prereqs {
   my ($self, $prereqs) = @_;
 
-  my $index = $self->{index};
+  require URI::cpan;
+
   for my $req ($self->_requirements($prereqs)) {
     my %uri_map;
     for my $module ($req->required_modules) {
       next if $module eq 'perl';
-      my $uri = $self->{uri_cache}{$module} ||= do {
-        my $res = $index->search_packages({ package => $module });
-        $res ? $res->{uri} : undef;
-      };
-      if ($uri) {
-        $uri_map{$uri}{$module} = $req->requirements_for_module($module);
-      }
+      my $uri = $self->_get_uri($module) or next;
+      $uri_map{$uri}{$module} = $req->requirements_for_module($module);
     }
     for my $uri (keys %uri_map) {
       my @modules = keys %{$uri_map{$uri}};
