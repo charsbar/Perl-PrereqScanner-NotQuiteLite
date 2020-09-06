@@ -6,7 +6,7 @@ use Carp;
 use Perl::PrereqScanner::NotQuiteLite::Context;
 use Perl::PrereqScanner::NotQuiteLite::Util;
 
-our $VERSION = '0.9912';
+our $VERSION = '0.9913';
 
 our @BUNDLED_PARSERS = qw/
   Aliased AnyMoose Autouse Catalyst ClassAccessor
