@@ -387,19 +387,33 @@ sub _dedupe_indexed_prereqs {
         next;
       }
 
-      # keep the topmost if none is versioned
-      my %score;
-      for my $module (@modules_without_version) {
-        my $depth = $module =~ s/::/::/g;
-        my $length = length $module;
-        $score{$module} = join ".", ($depth || 0), $length;
-      }
-      my $topmost = (sort {$score{$a} <=> $score{$b} or $a cmp $b} @modules_without_version)[0];
-      for my $module (@modules_without_version) {
-        next if $topmost eq $module;
-        $req->clear_requirement($module);
-        if ($self->{verbose}) {
-          print STDERR "  deduped $module (in favor of $topmost)\n";
+      # Replace with the main module if none is versioned
+      my $dist = URI->new($uri)->dist_name;
+      (my $main_module = $dist) =~ s/-/::/g;
+      if ($self->_get_uri($main_module)) {
+        $req->add_minimum($main_module);
+        for my $module (@modules_without_version) {
+          next if $main_module eq $module;
+          $req->clear_requirement($module);
+          if ($self->{verbose}) {
+            print STDERR "  deduped $module (in favor of $main_module)\n";
+          }
+        }
+      } else {
+        # special case for distributions without a main module
+        my %score;
+        for my $module (@modules_without_version) {
+          my $depth = $module =~ s/::/::/g;
+          my $length = length $module;
+          $score{$module} = join ".", ($depth || 0), $length;
+        }
+        my $topmost = (sort {$score{$a} <=> $score{$b} or $a cmp $b} @modules_without_version)[0];
+        for my $module (@modules_without_version) {
+          next if $topmost eq $module;
+          $req->clear_requirement($module);
+          if ($self->{verbose}) {
+            print STDERR "  deduped $module (in favor of $topmost)\n";
+          }
         }
       }
     }
