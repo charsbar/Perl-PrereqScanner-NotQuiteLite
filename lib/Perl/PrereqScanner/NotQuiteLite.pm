@@ -11,7 +11,7 @@ our $VERSION = '0.9913';
 our @BUNDLED_PARSERS = qw/
   Aliased AnyMoose Autouse Catalyst ClassAccessor
   ClassAutouse ClassLoad Core Inline KeywordDeclare Later
-  Mixin ModuleRuntime MojoBase Moose MooseXDeclare Only
+  Mixin ModuleRuntime MojoBase Moose MooseXDeclare ObjectPad Only
   PackageVariant Plack POE Prefork Superclass Syntax SyntaxCollector
   TestClassMost TestMore TestRequires UniversalVersion Unless
 /;
@@ -801,10 +801,6 @@ sub _scan {
     } elsif ($c1 eq '{') {
       if ($$rstr =~ m{$g_re_hash_shortcut}gc) {
         ($token, $token_desc) = ($1, '{EXPR}');
-        if ($current_scope & F_EVAL) {
-          $current_scope &= MASK_EVAL;
-          $c->{eval} = ($current_scope | $parent_scope) & F_EVAL ? 1 : 0;
-        }
         if ($parent_scope & F_EXPECTS_BRACKET) {
           $current_scope |= F_SCOPE_END;
           next;
@@ -834,12 +830,12 @@ sub _scan {
       }
       pos($$rstr) = $pos + 1;
       ($token, $token_desc) = ($c1, $c1);
-      my $stack_owner;
+      my $stack_keyword;
       if (@keywords) {
         for(my $i = @keywords; $i > 0; $i--) {
           my $keyword = $keywords[$i - 1];
           if ($c->token_expects_block($keyword)) {
-            $stack_owner = $keyword;
+            $stack_keyword = $keyword;
             if (@tokens and $c->token_defines_sub($keyword) and $c->has_callback_for(sub => $keyword)) {
               $c->run_callback_for(sub => $keyword, \@tokens);
               $current_scope &= MASK_KEEP_TOKENS;
@@ -849,7 +845,7 @@ sub _scan {
           }
         }
       }
-      $stack = [$token, $pos, $stack_owner || ''];
+      $stack = [$token, $pos, $stack_keyword || 'LIST'];
       if ($parent_scope & F_EXPECTS_BRACKET) {
         $current_scope |= F_SCOPE_END|F_STATEMENT_END|F_EXPR_END;
         next;
