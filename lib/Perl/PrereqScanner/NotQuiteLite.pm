@@ -801,6 +801,10 @@ sub _scan {
     } elsif ($c1 eq '{') {
       if ($$rstr =~ m{$g_re_hash_shortcut}gc) {
         ($token, $token_desc) = ($1, '{EXPR}');
+        if ($current_scope & F_EVAL) {
+          $current_scope &= MASK_EVAL;
+          $c->{eval} = ($current_scope | $parent_scope) & F_EVAL ? 1 : 0;
+        }
         if ($parent_scope & F_EXPECTS_BRACKET) {
           $current_scope |= F_SCOPE_END;
           next;
@@ -830,12 +834,12 @@ sub _scan {
       }
       pos($$rstr) = $pos + 1;
       ($token, $token_desc) = ($c1, $c1);
-      my $stack_keyword;
+      my $stack_owner;
       if (@keywords) {
         for(my $i = @keywords; $i > 0; $i--) {
           my $keyword = $keywords[$i - 1];
           if ($c->token_expects_block($keyword)) {
-            $stack_keyword = $keyword;
+            $stack_owner = $keyword;
             if (@tokens and $c->token_defines_sub($keyword) and $c->has_callback_for(sub => $keyword)) {
               $c->run_callback_for(sub => $keyword, \@tokens);
               $current_scope &= MASK_KEEP_TOKENS;
@@ -845,7 +849,7 @@ sub _scan {
           }
         }
       }
-      $stack = [$token, $pos, $stack_keyword || 'LIST'];
+      $stack = [$token, $pos, $stack_owner || ''];
       if ($parent_scope & F_EXPECTS_BRACKET) {
         $current_scope |= F_SCOPE_END|F_STATEMENT_END|F_EXPR_END;
         next;
