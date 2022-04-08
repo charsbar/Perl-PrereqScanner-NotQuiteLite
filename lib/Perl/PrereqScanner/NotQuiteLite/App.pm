@@ -299,7 +299,8 @@ sub _exclude_core_prereqs {
       if (Module::CoreList::is_core($module, undef, $perl_version) and
           !Module::CoreList::deprecated_in($module, undef, $perl_version)
       ) {
-        my $core_version = $Module::CoreList::version{$perl_version}{$module} or next;
+        next unless exists $Module::CoreList::version{$perl_version}{$module};
+        my $core_version = $Module::CoreList::version{$perl_version}{$module};
         next unless $req->accepts_module($module => $core_version);
         $req->clear_requirement($module);
         if ($self->{verbose}) {
