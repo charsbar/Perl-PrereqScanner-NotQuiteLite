@@ -10,6 +10,7 @@ use CPAN::Meta::Prereqs;
 use CPAN::Meta::Requirements;
 use Perl::PrereqScanner::NotQuiteLite;
 use Perl::PrereqScanner::NotQuiteLite::Util::Prereqs;
+use Parse::Distname;
 
 use constant WIN32 => $^O eq 'MSWin32';
 
@@ -372,14 +373,18 @@ sub __get_uri {
   my ($self, $module) = @_;
   my $res = $self->{index}->search_packages({ package => $module }) or return;
   ## ignore (non-dual) core modules
-  return if URI->new($res->{uri})->dist_name eq 'perl';
+  return if _dist_from_uri($res->{uri}) eq 'perl';
   return $res->{uri};
+}
+
+sub _dist_from_uri {
+  my $uri = shift;
+  $uri =~ s!^cpan:///\w+/!!;
+  Parse::Distname->new($uri)->dist;
 }
 
 sub _dedupe_indexed_prereqs {
   my ($self, $prereqs) = @_;
-
-  require URI::cpan;
 
   for my $req ($self->_requirements($prereqs)) {
     my %uri_map;
@@ -402,7 +407,7 @@ sub _dedupe_indexed_prereqs {
       }
 
       # Replace with the main module if none is versioned
-      my $dist = URI->new($uri)->dist_name;
+      my $dist = _dist_from_uri($uri);
       (my $main_module = $dist) =~ s/-/::/g;
       if ($self->_get_uri($main_module)) {
         $req->add_minimum($main_module);
