@@ -10,7 +10,7 @@ our $VERSION = '0.9917';
 
 our @BUNDLED_PARSERS = qw/
   Aliased AnyMoose Autouse Catalyst ClassAccessor
-  ClassAutouse ClassLoad Core Inline KeywordDeclare Later
+  ClassAutouse ClassLoad Core FeatureCompatClass Inline KeywordDeclare Later
   Mixin ModuleRuntime MojoBase Moose MooseXDeclare ObjectPad Only
   PackageVariant Plack POE Prefork Superclass Syntax SyntaxCollector
   TestClassMost TestMore TestRequires UniversalVersion Unless

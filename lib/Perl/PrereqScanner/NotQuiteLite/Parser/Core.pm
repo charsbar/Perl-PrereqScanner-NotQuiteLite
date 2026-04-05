@@ -120,6 +120,10 @@ sub parse_feature_args {
   }
   while(my $token = shift @$tokens) {
     next if ref $token;
+    $c->{feature}{$token} = 1;
+    if ($token eq 'class') {
+        $class->register_class($c, $used_module);
+    }
     if (exists $feature_since{$token}) {
       $c->add_perl($feature_since{$token} => "feature $token");
       next;
@@ -165,6 +169,85 @@ sub parse_package {
     }
     if (ref $token && $token->[1] && $token->[1] =~ /^\{/) {
       $c->add_perl("5.014", "package PACKAGE (VERSION) {}");
+    }
+  }
+}
+
+sub register_class {
+  my ($class, $c, $used_module) = @_;
+
+  $c->register_sub_parser(
+    'class',
+    [$class, 'parse_class_args', $used_module],
+  );
+  # not implemented yet
+  # $c->register_sub_parser(
+  #   'role',
+  #   [$class, 'parse_role_args', $used_module],
+  # );
+
+  $c->register_keyword_parser(
+    'class',
+    [$class, 'parse_class_args', $used_module],
+  );
+  # not implemented yet
+  # $c->register_keyword_parser(
+  #   'role',
+  #   [$class, 'parse_role_args', $used_module],
+  # );
+
+  # role is not implemented yet
+  $c->register_sub_keywords(qw/
+     class method
+  /);
+
+  $c->prototype_re(qr{\G(\((?:[^\\\(\)]*(?:\\.[^\\\(\)]*)*)\))});
+}
+
+sub parse_class_args {
+  my ($class, $c, $used_module, $raw_tokens) = @_;
+
+  my $tokens = convert_string_tokens($raw_tokens);
+  shift @$tokens; # discard class
+
+  my $isa = my $does = 0;
+  while(my $token = shift @$tokens) {
+    my ($name, $version) = ('', 0);
+    if (ref $token && $token->[1] && $token->[1] eq 'WORD') {
+      if (is_module_name($token->[0])) {
+        $name = $token->[0];
+        if (@$tokens && is_version($tokens->[0])) {
+          $version = shift @$tokens;
+        }
+        $c->add_package($name => $version);
+      }
+    }
+    if (ref $token && $token->[1] && $token->[1] eq 'ATTRIBUTE') {
+      while($token->[0] =~ s/:(?:isa|does)\(([^)]+)\)//) {
+        my ($name, $version) = split /\s+/, $1;
+        $version ||= 0;
+        if (is_module_name($name) && is_version($version)) {
+          $c->add($name => $version);
+        }
+      }
+    }
+  }
+}
+
+sub parse_role_args {
+  my ($class, $c, $used_module, $raw_tokens) = @_;
+
+  my $tokens = convert_string_tokens($raw_tokens);
+  shift @$tokens; # discard role
+
+  while(my $token = shift @$tokens) {
+    my ($name, $version) = ('', 0);
+    if (is_module_name($token->[0])) {
+      $name = $token->[0];
+      if (@$tokens && is_version($tokens->[0])) {
+        $version = shift @$tokens;
+      }
+      $c->add_package($name => $version);
     }
   }
 }
