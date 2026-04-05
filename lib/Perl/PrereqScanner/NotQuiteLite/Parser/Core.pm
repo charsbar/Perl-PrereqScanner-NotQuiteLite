@@ -12,7 +12,7 @@ my %feature_since = (
   current_sub => '5.016',
   evalbytes => '5.016',
   fc => '5.016',
-  arybase => '5.016',
+  arybase => '5.016',  # removed
   unicode_eval => '5.016',
   lexical_subs => '5.018',
   postderef => '5.020',
@@ -21,6 +21,43 @@ my %feature_since = (
   bitwise => '5.022',
   refaliasing => '5.022',
   declared_refs => '5.026',
+  indirect => '5.032',
+  isa => '5.032',
+  multidimensional => '5.034',
+  bareword_filehandles => '5.034',
+  try => '5.034',
+  defer => '5.036',
+  extra_paired_delimiters => '5.036',
+  class => '5.038',
+  module_true => '5.038',
+);
+
+my %builtin_since = (
+  true => '5.036',
+  false => '5.036',
+  inf => '5.040',
+  nan => '5.040',
+
+  is_bool => '5.036',
+  weaken => '5.036',
+  unweaken => '5.036',
+  is_weak => '5.036',
+  blessed => '5.036',
+  refaddr => '5.036',
+  reftype => '5.036',
+  ceil => '5.036',
+  floor => '5.036',
+  is_tainted => '5.038',
+  trim => '5.036',
+  stringify => '5.040',
+
+  created_as_string => '5.036',
+  created_as_number => '5.036',
+
+  load_module => '5.040',
+
+  indexed => '5.036',
+  export_lexically => '5.038',
 );
 
 sub register { return {
