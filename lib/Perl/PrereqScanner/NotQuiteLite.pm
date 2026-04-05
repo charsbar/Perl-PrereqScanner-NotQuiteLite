@@ -1369,7 +1369,6 @@ sub _scan {
           ($token_desc, $token_type) = ($token, 'OP');
         } else {
           ($token_desc, $token_type) = ('KEYWORD', 'KEYWORD');
-          $c->check_new_keyword($token);
           push @keywords, $token unless $token eq 'undef';
         }
       } else {
