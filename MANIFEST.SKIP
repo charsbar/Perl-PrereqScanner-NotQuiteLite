@@ -9,9 +9,12 @@
 (^|/)data/
 (^|/)tmp/
 (^|/)Makefile$
+(^|/)local/
 \.old$
 \.bak$
 \.SKIP$
+\.pl$
+\.log$
 (^|/)pm_to_blib
 ^cover_db/
 ^nytprof/
