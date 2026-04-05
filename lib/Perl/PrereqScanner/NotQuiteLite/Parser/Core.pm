@@ -29,6 +29,8 @@ sub register { return {
     base => 'parse_base_args',
     parent => 'parse_parent_args',
     feature => 'parse_feature_args',
+    experimental => 'parse_feature_args',
+    builtin => 'parse_builtin_args',
   },
   keyword => {
     package => 'parse_package',
@@ -113,7 +115,11 @@ sub parse_parent_args {
 sub parse_feature_args {
   my ($class, $c, $used_module, $raw_tokens) = @_;
 
-  $c->add_perl('5.010', 'feature');
+  if ($used_module eq 'feature') {
+    $c->add_perl('5.010', 'feature');
+  } elsif ($used_module eq 'experimental') {
+    $c->add_perl('5.020', 'experimental');
+  }
   my $tokens = convert_string_tokens($raw_tokens);
   if (is_version($tokens->[0])) {
     $c->add($used_module => shift @$tokens);
@@ -131,6 +137,23 @@ sub parse_feature_args {
     if ($token =~ /^:5\.([0-9]+)(\.\[0-9]+)?/) {
       my $version = sprintf '5.%03d', $1;
       $c->add_perl($version, $token);
+      next;
+    }
+  }
+}
+
+sub parse_builtin_args {
+  my ($class, $c, $used_module, $raw_tokens) = @_;
+
+  my $tokens = convert_string_tokens($raw_tokens);
+  if (is_version($tokens->[0])) {
+    $c->add($used_module => shift @$tokens);
+  }
+  while(my $token = shift @$tokens) {
+    next if ref $token;
+    $c->{builtin}{$token} = 1;
+    if (exists $builtin_since{$token}) {
+      $c->add_perl($builtin_since{$token} => "builtin $token");
       next;
     }
   }
